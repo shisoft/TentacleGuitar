@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 01672239708ceeb4ebe933bcc65002e4
-timeCreated: 1466179907
+timeCreated: 1466327706
 licenseType: Pro
 TextureImporter:
   fileIDToRecycleName:
@@ -10,6 +10,14 @@ TextureImporter:
     21300006: FretWire_0
     21300008: FretWire_1
     21300010: String
+    21300012: TrackWire
+    21300014: TrackBack
+    21300016: Note_Body_0
+    21300018: HoldOn
+    21300020: NoteLight
+    21300022: Note_Body_1
+    21300024: RectLight
+    21300026: NoteShadow
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -60,7 +68,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1
-        y: 118
+        y: 406
         width: 39
         height: 81
       alignment: 0
@@ -75,7 +83,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 41
-        y: 118
+        y: 406
         width: 39
         height: 81
       alignment: 0
@@ -90,7 +98,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 81
-        y: 118
+        y: 406
         width: 39
         height: 81
       alignment: 0
@@ -105,7 +113,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 124
-        y: 118
+        y: 406
         width: 3
         height: 81
       alignment: 0
@@ -116,7 +124,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 130
-        y: 118
+        y: 406
         width: 3
         height: 81
       alignment: 0
@@ -127,13 +135,156 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 136
-        y: 189
+        y: 477
         width: 10
         height: 10
       alignment: 9
       pivot: {x: 0, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
+    - name: TrackWire
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 469
+        width: 3
+        height: 7
+      alignment: 9
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: TrackBack
+      rect:
+        serializedVersion: 2
+        x: 154
+        y: 397
+        width: 66
+        height: 77
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1843009}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -33, y: 62.808838}
+        - {x: -33, y: -14.191162}
+        - {x: 33, y: -14.191162}
+        - {x: 33, y: 62.808838}
+    - name: Note_Body_0
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 374
+        width: 54
+        height: 31
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -37.5, y: 25.5}
+        - {x: -37.5, y: -25.5}
+        - {x: 28.5, y: -25.5}
+        - {x: 37.5, y: 7.5}
+        - {x: 37.5, y: 25.5}
+    - name: HoldOn
+      rect:
+        serializedVersion: 2
+        x: 235
+        y: 430
+        width: 317
+        height: 50
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -60.5, y: 25}
+        - {x: -58.5, y: 20}
+        - {x: -58.5, y: 18}
+        - {x: -56.5, y: 16}
+        - {x: -56.5, y: -5}
+        - {x: -56.5, y: 12}
+        - {x: -60.5, y: 22}
+        - {x: -66.5, y: 25}
+        - {x: -158.5, y: 25}
+        - {x: -158.5, y: -25}
+        - {x: 34.5, y: -25}
+        - {x: 37.5, y: -8}
+        - {x: 37.5, y: 25}
+      - - {x: 158.5, y: 22}
+        - {x: 154.5, y: 24}
+        - {x: 146.5, y: 25}
+        - {x: 138.5, y: 25}
+        - {x: 137.5, y: 24}
+        - {x: 128.5, y: 25}
+        - {x: 54.5, y: 25}
+        - {x: 50.5, y: 23}
+        - {x: 49.5, y: 20}
+        - {x: 49.5, y: -8}
+        - {x: 54.5, y: -22}
+        - {x: 62.5, y: -24}
+        - {x: 85.5, y: -24}
+        - {x: 122.5, y: -22}
+        - {x: 128.5, y: -19}
+        - {x: 135.5, y: -24}
+        - {x: 158.5, y: -24}
+    - name: NoteLight
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 377
+        width: 52
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: Note_Body_1
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 335
+        width: 63
+        height: 38
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -31.5, y: 19}
+        - {x: -31.5, y: -19}
+        - {x: 31.5, y: -19}
+        - {x: 31.5, y: 19}
+    - name: RectLight
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 301
+        width: 41
+        height: 34
+      alignment: 9
+      pivot: {x: 0.49181584, y: 0.50329053}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -20.16445, y: 16.888123}
+        - {x: -20.16445, y: -17.111877}
+        - {x: 17.83555, y: -17.111877}
+        - {x: 20.83555, y: -14.111877}
+        - {x: 20.83555, y: 16.888123}
+    - name: NoteShadow
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 235
+        width: 63
+        height: 66
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -27.5, y: 33}
+        - {x: -31.5, y: 24}
+        - {x: -31.5, y: -33}
+        - {x: 29.5, y: -33}
+        - {x: 31.5, y: -32}
+        - {x: 31.5, y: 25}
+        - {x: 28.5, y: 33}
     outline: []
   spritePackingTag: 
   userData: 

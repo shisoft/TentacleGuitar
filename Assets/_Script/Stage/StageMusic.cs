@@ -94,67 +94,18 @@ public class StageMusic : MonoBehaviour {
 
 
 
-	#region -------- static --------
-
-
-
-	public static void play () {
-		if (Main) {
-			Main.Play();
-		}
-	}
-
-
-	public static void pause () {
-		if (Main) {
-			Main.Pause();
-		}
-	}
-
-
-	public static void playPause () {
-		if (Main) {
-			Main.PlayPause();
-		}
-	}
-
-
-	public static void stop () {
-		if (Main) {
-			Main.Stop();
-		}
-	}
-
-
-	public static void stopToEnd () {
-		if (Main) {
-			Main.StopToEnd();
-		}
-	}
-
-
-	public static void fastForward (float time) {
-		if (Main) {
-			Main.FastForward(time);
-		}
-	}
-
-
-	public static void rewind (float time) {
-		if (Main) {
-			Main.Rewind(time);
-		}
-	}
-
-
-
-
-	#endregion
-
-
-
 	#region -------- public --------
 
+
+	public void Clear () {
+		Clip = null;
+		Time = 0f;
+		Pitch = 1f;
+		length = 0f;
+		IsPlaying = false;
+		isReady = false;
+		CancelInvoke();
+	}
 
 
 	public void Play () {

@@ -10,6 +10,8 @@ public class StageMusic : MonoBehaviour {
 
 	public static StageMusic Main = null;
 
+	public static StageMusic.StopToEndCallbackFunction StopToEndCallback;
+
 	public AudioClip Clip {
 		get {
 			return audioSource.clip;
@@ -74,6 +76,7 @@ public class StageMusic : MonoBehaviour {
 	private bool isPlaying = false;
 	private bool isReady = false;
 
+	
 
 
 	#region ------- Mono --------
@@ -98,6 +101,7 @@ public class StageMusic : MonoBehaviour {
 
 
 	public void Clear () {
+		Stop();
 		Clip = null;
 		Time = 0f;
 		Pitch = 1f;
@@ -138,6 +142,7 @@ public class StageMusic : MonoBehaviour {
 		if (IsReady) {
 			Pause();
 			Time = Length - 0.1f - 1f / Clip.frequency;
+			StopToEndCallback();
 		}
 	}
 
@@ -183,6 +188,9 @@ public class StageMusic : MonoBehaviour {
 
 
 	#endregion
+
+
+	public delegate void StopToEndCallbackFunction ();
 
 
 }

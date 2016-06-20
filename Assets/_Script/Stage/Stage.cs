@@ -2,8 +2,10 @@
 
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using PathologicalGames;
+
 
 
 
@@ -17,6 +19,16 @@ public class Stage : MonoBehaviour {
 		}
 	}
 
+	public static SpawnPool NotePool {
+		get {
+			if(!notePool){
+				notePool = PoolManager.Pools["Note"];
+			}
+			return notePool;
+		}
+	}
+	private static SpawnPool notePool = null;
+
 	// Quick Cache
 	public static float Time {
 		get {
@@ -29,7 +41,7 @@ public class Stage : MonoBehaviour {
 	private StageSetting stageSetting;
 
 	// Logic
-	private bool LoadingLevel = false;
+	private static bool LoadingLevel = false;
 
 	// Lerp Animation 
 	private Vector3 CameraAimPos;
@@ -40,6 +52,7 @@ public class Stage : MonoBehaviour {
 	private Color[] TrackHightLightAimColors = new Color[24];
 	private float StringColorRant = 0.1f;
 	private float TrackHightLightColorRant = 0.4f;
+	
 
 	#region -------- Mono --------
 
@@ -50,80 +63,16 @@ public class Stage : MonoBehaviour {
 		CameraAimRot = TheStageSetting.CameraRot;
 		TheStageSetting.StringColors.CopyTo(StringAimColors, 0);
 		TrackHightLightAimColors.Initialize();
+		for (int i = 0; i < 24; i++) {
+			SetTrackHightLight(i, false);
+		}
+		StageMusic.StopToEndCallback += this.CleanNoteOnEnd;
 		BeatMapManager.StageAwake();
 	}
 
 
-
-	void Start () {
-
-		///* TestOnly Test Only
-		StartLevel(new SongInitInfo(
-			Application.dataPath + @"\Ccna — Aquarius.wav",// 音乐文件地址
-			Application.dataPath + @"\Ccna — Aquarius.wav",// 谱面文件地址
-			StagePlayMod.Auto,
-			true
-		));
-		doTest = true;
-		//*/
-
-	}
-
-
-
-	bool doTest = false;
-	int currentTestTruck = 0;
-	float currentTestAngle = 0f;
 	void Update () {
 		
-		if (doTest) {
-
-			if (Time + TheStageSetting.ShowNoteTime < StageMusic.Main.Length) {
-				AddNote(new TapNoteInfo(Random.Range(0, 24), Random.Range(0, 6), Time + TheStageSetting.ShowNoteTime));
-			}
-			
-			if (Input.GetKeyDown(KeyCode.A)) {
-				currentTestTruck = Mathf.Clamp(currentTestTruck - 1, 2, 21);
-				MoveCamera(currentTestTruck, 0.1f);
-			}
-
-			if (Input.GetKeyDown(KeyCode.D)) {
-				currentTestTruck = Mathf.Clamp(currentTestTruck + 1, 2, 21);
-				MoveCamera(currentTestTruck, 0.1f);
-			}
-
-			if (Input.GetKeyDown(KeyCode.E)) {
-				currentTestAngle += 10f;
-				currentTestAngle = Mathf.Clamp(currentTestAngle + 10f, -30f, 30f);
-				RotCamera(new Vector3(0f, currentTestAngle, 0f), 0.1f);
-			}
-
-			if (Input.GetKeyDown(KeyCode.Q)) {
-				currentTestAngle = Mathf.Clamp(currentTestAngle - 10f, -30f, 30f);
-				RotCamera(new Vector3(0f, currentTestAngle, 0f), 0.1f);
-			}
-
-			if (Input.GetKeyDown(KeyCode.Alpha1)) {
-				SetStringLight(0, !Input.GetKey(KeyCode.Z));
-			}
-			if (Input.GetKeyDown(KeyCode.Alpha2)) {
-				SetTrackHightLight(1, !Input.GetKey(KeyCode.Z));
-			}
-			if (Input.GetKeyDown(KeyCode.Alpha3)) {
-				SetTrackHightLight(2, !Input.GetKey(KeyCode.Z));
-			}
-			if (Input.GetKeyDown(KeyCode.Alpha4)) {
-				SetTrackHightLight(3, !Input.GetKey(KeyCode.Z));
-			}
-			if (Input.GetKeyDown(KeyCode.Alpha5)) {
-				SetTrackHightLight(4, !Input.GetKey(KeyCode.Z));
-			}
-			if (Input.GetKeyDown(KeyCode.Alpha6)) {
-				SetTrackHightLight(5, !Input.GetKey(KeyCode.Z));
-			}
-
-		}
-			
 		// Aim Movement
 		TheStageSetting.CameraPos = Vector3.Lerp(TheStageSetting.CameraPos, CameraAimPos, CameraMoveRant);
 		TheStageSetting.CameraRot = Quaternion.Lerp(TheStageSetting.CameraRot, CameraAimRot, CameraRotRant);
@@ -155,17 +104,43 @@ public class Stage : MonoBehaviour {
 
 	#region -------- Public --------
 
-	
-	public void StartLevel (SongInitInfo info) {
+
+	#region --- Game ---
+
+
+	public static void StartGame (SongInitInfo info) {
 		// Start Load
-		if(!LoadingLevel){
-			StopAllCoroutines();
-			StartCoroutine(LoadLevel(info));
+		if(!LoadingLevel || !Main){
+			Main.StopAllCoroutines();
+			Main.StartCoroutine(Main.LoadLevel(info));
 		} else {
 			Debug.LogWarning("Can not start a level now! Another level is loading...");
 		}
 		
 	}
+
+
+	public static void StopGame () {
+		StageMusic.Main.Clear();
+		BeatMapManager.ClearBeatMap();
+	}
+
+
+	public static void PlayPauseGame () {
+		StageMusic.Main.PlayPause();
+	}
+
+	public static void PauseGame () {
+		StageMusic.Main.Pause();
+	}
+
+
+	public static void UnPauseGame () {
+		StageMusic.Main.Play();
+	}
+
+
+	#endregion
 
 
 	#region --- Camera ---
@@ -175,9 +150,12 @@ public class Stage : MonoBehaviour {
 	/// </summary>
 	/// <param name="trackID"> 轨道的ID 0 - 23 对应 1 - 24 品 </param>
 	/// <param name="rant"> 缓动率，1表示一下移动过去，0表示不动 </param>
-	public void MoveCamera (int trackID, float rant = -1f) {
+	public static void MoveCamera (int trackID, float rant = -1f) {
+		if (!Main) {
+			return;
+		}
 		trackID = Mathf.Clamp(trackID, 2, 21);
-		MoveCamera(new Vector2(stageSetting.TrackPos(trackID).x, CameraAimPos.y), rant);
+		MoveCamera(new Vector2(TheStageSetting.TrackPos(trackID).x, Main.CameraAimPos.y), rant);
 	}
 
 	/// <summary>
@@ -185,9 +163,12 @@ public class Stage : MonoBehaviour {
 	/// </summary>
 	/// <param name="y"> 高度数值，单位unit </param>
 	/// <param name="rant"> 缓动率 </param>
-	public void MoveCameraHeight (float y, float rant = -1f) {
+	public static void MoveCameraHeight (float y, float rant = -1f) {
+		if (!Main) {
+			return;
+		}
 		y = Mathf.Clamp(y, 0f, 5f);
-		MoveCamera(new Vector3(CameraAimPos.x, y, CameraAimPos.z), rant);
+		MoveCamera(new Vector3(Main.CameraAimPos.x, y, Main.CameraAimPos.z), rant);
 	}
 
 	/// <summary>
@@ -195,11 +176,14 @@ public class Stage : MonoBehaviour {
 	/// </summary>
 	/// <param name="pos"> 坐标 </param>
 	/// <param name="rant"> 缓动率 </param>
-	public void MoveCamera (Vector3 pos, float rant = -1f) {
-		if (rant > 0f) {
-			CameraMoveRant = Mathf.Clamp01(rant);
+	public static void MoveCamera (Vector3 pos, float rant = -1f) {
+		if (!Main) {
+			return;
 		}
-		CameraAimPos = pos;
+		if (rant > 0f) {
+			Main.CameraMoveRant = Mathf.Clamp01(rant);
+		}
+		Main.CameraAimPos = pos;
 	}
 
 	/// <summary>
@@ -207,16 +191,19 @@ public class Stage : MonoBehaviour {
 	/// </summary>
 	/// <param name="rot"> 角度，欧拉角 </param>
 	/// <param name="rant"> 缓动率 </param>
-	public void RotCamera (Vector3 rot, float rant = -1f) {
+	public static void RotCamera (Vector3 rot, float rant = -1f) {
+		if (!Main) {
+			return;
+		}
 		rot = new Vector3(
 			Mathf.Clamp(rot.x, -26f, 16f),
 			Mathf.Clamp(rot.y, -26f, 26f),
 			Mathf.Clamp(rot.z, -6f, 6f)
 		);
 		if (rant > 0f) {
-			CameraRotRant = Mathf.Clamp01(rant);
+			Main.CameraRotRant = Mathf.Clamp01(rant);
 		}
-		CameraAimRot = Quaternion.Euler(rot);
+		Main.CameraAimRot = Quaternion.Euler(rot);
 	}
 
 
@@ -236,29 +223,50 @@ public class Stage : MonoBehaviour {
 	/// <param name="info">
 	/// 这个音符的信息
 	/// </param>
-	public void AddNote (TapNoteInfo info) {
-		Transform tf = PoolManager.Pools["Note"].SpawnToDefault("TapNote");
-		TapNote tn = tf.GetComponent<TapNote>();
-		if (tn) {
-			tn.NoteInfo = info;
+	public static void AddNote (NoteInfo info) {
+		Transform tf = NotePool.SpawnToDefault("Note");
+		Note n = tf.GetComponent<Note>();
+		if (n) {
+			n.NoteInfo = info;
 		}
+		SortNotePool();
 	}
 
-
-	public void AddNote (HoldNoteInfo info) {
-		Transform tf = PoolManager.Pools["Note"].SpawnToDefault("HoldNote");
-		HoldNote hn = tf.GetComponent<HoldNote>();
-		if (hn) {
-			hn.NoteInfo = info;
-		}
-	}
 
 	/// <summary>
 	/// 瞬间清除台面上的所有音符
 	/// </summary>
-	public void RemoveAllNotes () {
-		PoolManager.Pools["Note"].DespawnAllToDefault();
+	public static void RemoveAllNotes () {
+		NotePool.DespawnAllToDefault();
 	}
+
+
+
+	public static void Beat (int fret, int stringID, float Time) {
+		int len = NotePool.Count;
+		for (int i = 0; i < len; i++) {
+			Note note = NotePool[i].GetComponent<Note>();
+			if (note) {
+				if (note.Time > Time + TheStageSetting.MissTime) {
+					break;
+				} else {
+					NoteState state = note.Beat(Time);
+					if (state != NoteState.None && state != NoteState.Holding) {
+						StageScore.AddScore(state);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+
+	public static void Hold (int fret, int stringID, float Time) {
+
+
+
+	}
+
 
 
 	#endregion
@@ -272,7 +280,7 @@ public class Stage : MonoBehaviour {
 	/// <param name="stringID"> 琴弦编号 0 - 5 对应 最上面 - 最下面 </param>
 	/// <param name="light"> 发光还是暗淡 </param>
 	/// <param name="rant"> 缓动率 </param>
-	public void SetStringLight (int stringID, bool light, float rant = -1) {
+	public static void SetStringLight (int stringID, bool light, float rant = -1) {
 		SetStringLight(stringID, light ? TheStageSetting.StringColors[stringID] : TheStageSetting.StringDarkColor, rant);
 	}
 
@@ -285,7 +293,7 @@ public class Stage : MonoBehaviour {
 	/// <param name="b"></param>
 	/// <param name="a"></param>
 	/// <param name="rant"> 缓动率 </param>
-	public void SetStringLight (int stringID, float r, float g, float b, float a, float rant = -1f) {
+	public static void SetStringLight (int stringID, float r, float g, float b, float a, float rant = -1f) {
 		SetStringLight(stringID, new Color(r, g, b, a), rant);
 	}
 
@@ -295,12 +303,15 @@ public class Stage : MonoBehaviour {
 	/// <param name="stringID"></param>
 	/// <param name="color"></param>
 	/// <param name="rant"></param>
-	public void SetStringLight (int stringID, Color color, float rant = -1f) {
+	public static void SetStringLight (int stringID, Color color, float rant = -1f) {
+		if (!Main) {
+			return;
+		}
 		if (rant > 0) {
-			StringColorRant = Mathf.Clamp01(rant);
+			Main.StringColorRant = Mathf.Clamp01(rant);
 		}
 		stringID = Mathf.Clamp(stringID, 0, 5);
-		StringAimColors[stringID] = color;
+		Main.StringAimColors[stringID] = color;
 	}
 
 
@@ -315,7 +326,7 @@ public class Stage : MonoBehaviour {
 	/// <param name="trackID"> 轨道的ID，0-23 对应 1-24 品 </param>
 	/// <param name="light"> 是否加亮 </param>
 	/// <param name="rant"> 缓动率 </param>
-	public void SetTrackHightLight (int trackID, bool light, float rant = -1f) {
+	public static void SetTrackHightLight (int trackID, bool light, float rant = -1f) {
 		SetTrackHightLight(trackID, light ? TheStageSetting.TrackHightLightColor : Color.clear, rant);
 	}
 
@@ -328,7 +339,7 @@ public class Stage : MonoBehaviour {
 	/// <param name="b"></param>
 	/// <param name="a"></param>
 	/// <param name="rant"></param>
-	public void SetTrackHightLight (int trackID, float r, float g, float b, float a, float rant = -1f) {
+	public static void SetTrackHightLight (int trackID, float r, float g, float b, float a, float rant = -1f) {
 		SetTrackHightLight(trackID, new Color(r, g, b, a), rant);
 	}
 
@@ -338,12 +349,15 @@ public class Stage : MonoBehaviour {
 	/// <param name="trackID"></param>
 	/// <param name="color"></param>
 	/// <param name="rant"></param>
-	public void SetTrackHightLight (int trackID, Color color, float rant = -1f) {
+	public static void SetTrackHightLight (int trackID, Color color, float rant = -1f) {
+		if (!Main) {
+			return;
+		}
 		if (rant > 0) {
-			TrackHightLightColorRant = Mathf.Clamp01(rant);
+			Main.TrackHightLightColorRant = Mathf.Clamp01(rant);
 		}
 		trackID = Mathf.Clamp(trackID, 0, 23);
-		TrackHightLightAimColors[trackID] = color;
+		Main.TrackHightLightAimColors[trackID] = color;
 	}
 
 
@@ -364,7 +378,8 @@ public class Stage : MonoBehaviour {
 		StageMusic.Main.Stop();
 
 		RemoveAllNotes();
-		
+		StageScore.Clear();
+
 		HoldOn.Show();
 		HoldOn.SetProgress(0f / 2f);
 
@@ -455,6 +470,7 @@ public class Stage : MonoBehaviour {
 		if (!success) {
 			yield return LoadLevelFail("Failed to load beatMap! " + info.BeatMapFilePath);
 		}
+		StageScore.Init(BeatMapManager.GetNoteSum());
 
 		yield return null;
 	}
@@ -466,15 +482,63 @@ public class Stage : MonoBehaviour {
 		Debug.LogError(msg);
 		StopAllCoroutines();
 		LoadingLevel = false;
+		StageMusic.Main.Clear();
+		BeatMapManager.ClearBeatMap();
 		Resources.UnloadUnusedAssets();
 		yield return null;
 	}
 
 
+	private static void SortNotePool () {
+		NotePool.Sort(NoteTimeSorter.TheNoteTimeSorter);
+	}
+
+
+	private void CleanNoteOnEnd () {
+		RemoveAllNotes();
+	}
 
 	#endregion
 
 
 
+
 }
+
+
+
+public class NoteTimeSorter : IComparer<Transform> {
+
+	public static NoteTimeSorter TheNoteTimeSorter {
+		get {
+			if (theNoteTimeSorter == null) {
+				theNoteTimeSorter = new NoteTimeSorter();
+			}
+			return theNoteTimeSorter;
+		}
+	}
+	private static NoteTimeSorter theNoteTimeSorter = null;
+
+
+	public int Compare (Transform x, Transform y) {
+		Note noteX = x.GetComponent<Note>();
+		if (noteX) {
+			Note noteY = y.GetComponent<Note>();
+			if (noteY) {
+				return noteX.Time.CompareTo(noteY.Time);
+			} else {
+				return 0;
+			}
+		} else {
+			return 0;
+		}
+	}
+
+
+}
+
+
+
+
+
 }

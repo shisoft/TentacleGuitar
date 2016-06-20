@@ -6,17 +6,19 @@ using System.Collections;
 
 
 public enum StagePlayMod {
-	None = 0,
-	Auto = 1,
-	Mouse = 2,
-	RealGuitar = 3,
+	Auto = 0,
+	Mouse = 1,
+	RealGuitar = 2,
 }
 	
 
 [System.Serializable]
 public class StageSetting {
-	
-	
+
+
+	#region --- Note ---
+
+
 	public float NoteSpeed {
 		get {
 			return SpeedScale * noteSpeed;
@@ -49,18 +51,19 @@ public class StageSetting {
 			return showNoteTime;
 		}
 	}	  // 提前多少秒显示音符，位于临界点附近时会淡入淡出
-	
-	public float MusicLoadingMaxTime {
-		get {
-			return musicLoadingMaxTime;
-		}
-	}	 // 等待音乐载准备的时间（s），超出这个时间则宣告音乐载入失败。不要用代码修改。
 
 	public Color[] NoteColors {
 		get {
 			return noteColors;
 		}
 	}	// 音符 发光时的颜色，0是最上面的。
+
+	
+	#endregion
+
+
+	#region --- String ---
+
 
 	public Color[] StringColors {
 		get {
@@ -86,6 +89,13 @@ public class StageSetting {
 		}
 	}	 // 琴弦光晕的渲染器
 
+
+	#endregion
+
+
+	#region --- Track ---
+
+
 	public SpriteRenderer[] TrackHighLights {
 		get {
 			return trackHighLights;
@@ -98,11 +108,18 @@ public class StageSetting {
 		}
 	}	  // 轨道高亮时的颜色
 
-	public Transform NoteHolderTF {
+	public float TrackBackPosY {
 		get {
-			return noteHolderTF;
+			return trackBack.position.y;
 		}
-	}	  // 装载音符的容器
+	}   // 轨道底盘的Y坐标
+
+
+	#endregion
+
+
+	#region --- Camera ---
+
 
 	public Transform MainCamera {
 		get {
@@ -129,11 +146,17 @@ public class StageSetting {
 		}
 	}	 // 摄影机的角度
 
-	public float TrackBackPosY {
+
+	#endregion
+
+
+	#region --- Game Setting ---
+
+	public float MusicLoadingMaxTime {
 		get {
-			return trackBack.position.y;
+			return musicLoadingMaxTime;
 		}
-	}   // 轨道底盘的Y坐标
+	}	 // 等待音乐载准备的时间（s），超出这个时间则宣告音乐载入失败。不要用代码修改。
 
 	public float MissTime {
 		get {
@@ -156,9 +179,11 @@ public class StageSetting {
 		}
 	}	// 游戏模式，自动演示 / 鼠标 / 乐器 / 无
 
+	#endregion
+
 
 	// Note
-	[Header("|Note|")]
+	[Space(20f)]
 	[SerializeField]
 	[Range(1f, 8f)]
 	private int speedScale = 4;	
@@ -169,29 +194,26 @@ public class StageSetting {
 	[SerializeField]
 	private float startMoveDistance = 4f;
 	[SerializeField]
-	private Transform noteHolderTF;
+	private float showNoteTime = 3f;
 	[SerializeField]
 	private Color[] noteColors;	
-	[SerializeField]
-	private float showNoteTime = 3f;
 
 	// String
-	[Header("|String|")]
-	[SerializeField]
-	private Color[] stringColors;
+	[Space(20f)]
 	[SerializeField]
 	private Color stringDarkColor;	
+	[SerializeField]
+	private Color[] stringColors;
 	[SerializeField]
 	private SpriteRenderer[] strings;
 	[SerializeField]
 	private SpriteRenderer[] stringLights;
+	
 
 	// Track
-	[Header("|Track|")]
+	[Space(20f)]
 	[SerializeField]
 	private Transform trackBack;
-	[SerializeField]
-	private SpriteRenderer[] trackWires;
 	[SerializeField]
 	private Vector3 tracksPivot;
 	[SerializeField]
@@ -203,26 +225,28 @@ public class StageSetting {
 	[SerializeField]
 	private Color trackHightLightColor;
 	[SerializeField]
+	private SpriteRenderer[] trackWires;
+	[SerializeField]
 	private SpriteRenderer[] trackHighLights;
+	
 
 	// Camera
-	[Header("|Camera|")]
+	[Space(20f)]
 	[SerializeField]
 	private Transform mainCamera;
-
-	// Logic
-	[Header("|Logic|")]
-	[SerializeField]
-	private float musicLoadingMaxTime = 20f;
+	
 
 	// GameSetting
-	[Header("|Stage Setting|")]
+	[Space(20f)]
+	[SerializeField]
+	private float musicLoadingMaxTime = 20f;
 	[SerializeField]
 	private float missTime;
 	[SerializeField]
 	private float perfectTime;
 	[SerializeField]
 	private StagePlayMod playMod = StagePlayMod.RealGuitar;
+	
 
 
 	/// <summary>

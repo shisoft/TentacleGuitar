@@ -112,6 +112,8 @@ namespace PathologicalGames
 
 
         #region Public Code-only Parameters
+
+
         /// <summary>
         /// The time in seconds to stop waiting for particles to die.
         /// A warning will be logged if this is triggered.
@@ -384,6 +386,12 @@ namespace PathologicalGames
 
 
         #region Pool Functionality
+
+		public void Sort (IComparer<Transform> com) {
+			_spawned.Sort(com);
+		}
+
+
         /// <description>
         ///	Spawns an instance or creates a new instance if none are available.
         ///	Either way, an instance will be set to the passed position and 

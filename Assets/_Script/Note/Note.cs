@@ -52,6 +52,15 @@ public class Note : MonoBehaviour {
 		}
 	}
 
+	public NoteInfo.NoteType Type {
+		get {
+			return type;
+		}
+		set {
+			type = value;
+		}
+	}
+
 	public NoteState State {
 		get {
 			return state;
@@ -108,12 +117,24 @@ public class Note : MonoBehaviour {
 		}
 	}
 
+	public NoteInfo NoteInfo {
+		get {
+			return new NoteInfo(X, Y, Time, Type);
+		}
+		set {
+			X = value.X;
+			Y = value.Y;
+			Time = value.Time;
+			Type = value.Type;
+		}
+	}
 
 
 
 	private int x;		// 0 ~ 23  对应 1 ~ 24 品
 	private int y;		// 0 ~ 5 对应 最上面 ~ 最下面的琴弦
 	private float time;	// 单位秒 音符在音乐里的对应时间
+	private NoteInfo.NoteType type; // 音符的类型，点击/长按 等
 	private NoteState state; // 音符当前的状态，例如 还没被击打（none），被击打为完美（perfect），没打到（miss）
 	private float beatOffset; // 玩家打击的时差，正好打成perfect时为0，提前0.1s点击音符时为-0.1
 	[SerializeField]
@@ -123,6 +144,21 @@ public class Note : MonoBehaviour {
 	private SpriteRenderer[] allRenderer = null;	// 所有和这个音符相关的 SpriteRenderer
 	private Animator ani = null;
 	private bool isReady = true;
+
+
+
+	#region -------- Puclic --------
+
+
+	public NoteState Beat (float time) {
+		if (State == NoteState.None) {
+			BeatOffset = time - this.Time;
+			StateUpdate();
+			return State;
+		} else {
+			return NoteState.None;
+		}
+	}
 
 
 	public void SetLayer () {
@@ -166,6 +202,181 @@ public class Note : MonoBehaviour {
 		SetColor();
 		IsReady = false;
 	}
+
+
+	#endregion
+
+
+
+	#region -------- Mono --------
+
+
+	void OnEnable () {
+		SetColor();
+		SetLayer();
+		BeatOffset = -Stage.TheStageSetting.MissTime - 1f;
+		State = NoteState.None;
+		IsReady = false;
+		TapNoteUpdate();
+	}
+
+
+	void OnDisable () {
+		Clear();
+	}
+
+
+
+	void Update () {
+
+		IsReady = true;
+
+		StateUpdate();
+
+		switch (Type) {
+			default:
+			case NoteInfo.NoteType.Tap:
+				TapNoteUpdate();
+				break;
+			case NoteInfo.NoteType.Zero:
+				ZeroNoteUpdate();
+				break;
+			case NoteInfo.NoteType.Hold:
+				HoldNoteUpdate();
+				break;
+			case NoteInfo.NoteType.Slide:
+				SlideNoteUpdate();
+				break;
+		}
+		
+
+
+
+	}
+
+
+	#endregion
+
+
+
+	#region -------- Logic --------
+
+
+
+	void StateUpdate () {
+		//      -missTime    -perTime     perTime   missTime
+		//  none    |     good   |    per    |   good  |    miss
+		if (State != NoteState.None) {
+			return;
+		}
+		NoteState prevState = State;
+		switch (Stage.TheStageSetting.PlayMod) {
+			default:
+			case StagePlayMod.Auto:
+				BeatOffset = 0f;
+				State = Stage.Time > this.Time ? NoteState.Perfect : NoteState.None;
+				break;
+			case StagePlayMod.Mouse:
+			case StagePlayMod.RealGuitar:
+				if (StageMusic.Main.Time - Time > Stage.TheStageSetting.MissTime) {
+					BeatOffset = Stage.TheStageSetting.MissTime;
+					State = NoteState.Miss;
+					break;
+				}
+				if (BeatOffset < -Stage.TheStageSetting.MissTime) {
+					State = NoteState.None;
+				} else if (BeatOffset < -Stage.TheStageSetting.PerfectTime) {
+					State = NoteState.Good;
+				} else if (BeatOffset < Stage.TheStageSetting.PerfectTime) {
+					State = NoteState.Perfect;
+				} else if (BeatOffset < Stage.TheStageSetting.MissTime) {
+					State = NoteState.Good;
+				} else {
+					State = NoteState.Miss;
+				}
+				break;
+		}
+
+		if (prevState != State) {
+			Ani.SetTrigger(State.ToString());
+		}
+
+	}
+
+
+	void TapNoteUpdate () {
+
+		float prevZ = transform.localPosition.z;
+		float lifeTime = State == NoteState.None ? 
+			Mathf.Min(0f, Stage.Time - this.Time) : 
+			Mathf.Min(BeatOffset, 0f);
+		float mDistance = Stage.TheStageSetting.StartMoveDistance;
+		float speed = Stage.TheStageSetting.NoteSpeed;
+
+		
+		// Pos
+		Vector3 pos = Stage.TheStageSetting.TrackPos(this.X, this.Y);
+		pos.z = lifeTime * -Stage.TheStageSetting.NoteSpeed;
+		pos.y = Mathf.Abs(pos.z) < mDistance ?
+			Mathf.Lerp(0f, pos.y, (mDistance - Mathf.Abs(pos.z)) / mDistance) :
+			0f;
+
+		transform.position = pos;
+
+		if (pos.z > 0 != prevZ > 0) {
+			SetLayer();
+		}
+		
+		// Rot
+		Vector3 angle = Quaternion.Lerp(
+			Quaternion.Euler(0f, 0f, 0f),
+			Quaternion.Euler(0f, 0f, 90f),
+			Mathf.Abs(lifeTime) * speed / Stage.TheStageSetting.StartRotDistance
+		).eulerAngles;
+		transform.rotation = Quaternion.Euler(angle);
+		
+		// Scale
+		transform.localScale = Vector3.one * Mathf.Clamp01((Stage.TheStageSetting.ShowNoteTime * speed - Mathf.Abs(pos.z)) * 1f);
+		
+		// Shadow
+		ShadowTF.position = new Vector3(pos.x, Stage.TheStageSetting.TrackBackPosY, pos.z);
+		ShadowTF.rotation = Quaternion.Euler(90f, 0f, 0f);
+
+	}
+
+
+	void ZeroNoteUpdate () {
+
+
+
+
+
+
+	}
+
+
+	void HoldNoteUpdate () {
+
+
+
+
+
+
+	}
+
+
+	void SlideNoteUpdate () {
+
+
+
+
+
+
+	}
+
+
+
+	#endregion
 
 
 }

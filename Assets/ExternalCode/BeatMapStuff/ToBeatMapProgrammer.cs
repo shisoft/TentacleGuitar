@@ -35,6 +35,7 @@ public class BeatMapManager {
 
 
 
+
 		// 执行到这里时，谱面完成加载
 		return true;
 	}
@@ -95,6 +96,25 @@ public class BeatMapManager {
 
 	}
 
+
+	#endregion
+
+
+	#region -------- Request --------
+
+
+	/// <summary>
+	/// 获取当前加载的谱面的音符总数
+	/// </summary>
+	/// <returns> 音符总数，没加载谱面的话返回0 </returns>
+	public static int GetNoteSum () {
+
+
+		// ----- Your Code Here -----
+
+
+		return 0;
+	}
 
 	#endregion
 

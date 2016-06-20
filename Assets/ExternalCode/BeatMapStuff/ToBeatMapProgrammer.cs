@@ -102,27 +102,10 @@ public class BeatMapManager {
 	#region -------- Stage Tools --------
 
 
-	/// <summary>
-	/// 添加一个音符到场景中，主线程
-	/// 调用的太早的话Stage.Main会为空，请使用 region -> MonoMessage 里提供的函数调用
-	/// 注意：你可以在任意时间Add任意Note到Stage里，即便是在初始化时就把所有Note都Add进去，Stage也会正常运转
-	/// 但是Add太多Note会影响性能，所以请在Note出现前几秒把它Add进Stage
-	/// 你不需要清理过期的Note
-	/// </summary>
-	/// <param name="info">
-	/// 这个音符的信息
-	/// </param>
-	public void AddNote (TapNoteInfo info) {
-		// Read Only. Don't code here
-		Stage.Main.AddNote(info);
-	}
-
-	public void AddNote (HoldNoteInfo info) {
-		// Read Only. Don't code here
-		Stage.Main.AddNote(info);
-	}
-
-
+	// 请看 Stage.cs 里的 #region -------- Public -------- 150行附近
+	// 里面的东西可以随便用
+	
+	
 
 	#endregion
 

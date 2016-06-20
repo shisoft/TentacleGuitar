@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 01672239708ceeb4ebe933bcc65002e4
-timeCreated: 1466327706
+timeCreated: 1466349769
 licenseType: Pro
 TextureImporter:
   fileIDToRecycleName:
@@ -8,7 +8,7 @@ TextureImporter:
     21300002: Fret_1
     21300004: Fret_2
     21300006: FretWire_0
-    21300008: FretWire_1
+    21300008: FretWire
     21300010: String
     21300012: TrackWire
     21300014: TrackBack
@@ -18,6 +18,7 @@ TextureImporter:
     21300022: Note_Body_1
     21300024: RectLight
     21300026: NoteShadow
+    21300028: TrackLight
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -109,18 +110,7 @@ TextureImporter:
         - {x: -19.5, y: -40.5}
         - {x: 19.5, y: -40.5}
         - {x: 19.5, y: 40.5}
-    - name: FretWire_0
-      rect:
-        serializedVersion: 2
-        x: 124
-        y: 406
-        width: 3
-        height: 81
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-    - name: FretWire_1
+    - name: FretWire
       rect:
         serializedVersion: 2
         x: 130
@@ -156,18 +146,22 @@ TextureImporter:
     - name: TrackBack
       rect:
         serializedVersion: 2
-        x: 154
-        y: 397
-        width: 66
-        height: 77
+        x: 159
+        y: 396
+        width: 56
+        height: 79
       alignment: 9
       pivot: {x: 0.5, y: 0.1843009}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
-      - - {x: -33, y: 62.808838}
-        - {x: -33, y: -14.191162}
-        - {x: 33, y: -14.191162}
-        - {x: 33, y: 62.808838}
+      - - {x: -27, y: 64.440216}
+        - {x: -28, y: 42.440216}
+        - {x: -28, y: -10.559784}
+        - {x: -26, y: -14.559784}
+        - {x: 24, y: -14.559784}
+        - {x: 28, y: -11.559784}
+        - {x: 28, y: 49.440216}
+        - {x: 20, y: 64.440216}
     - name: Note_Body_0
       rect:
         serializedVersion: 2
@@ -285,6 +279,17 @@ TextureImporter:
         - {x: 31.5, y: -32}
         - {x: 31.5, y: 25}
         - {x: 28.5, y: 33}
+    - name: TrackLight
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 309
+        width: 23
+        height: 59
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
     outline: []
   spritePackingTag: 
   userData: 

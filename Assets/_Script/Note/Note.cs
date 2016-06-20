@@ -23,7 +23,7 @@ public enum NoteState {
 
 public class Note : MonoBehaviour {
 
-
+	
 	public int X {
 		get {
 			return x;
@@ -109,6 +109,8 @@ public class Note : MonoBehaviour {
 	}
 
 
+
+
 	private int x;		// 0 ~ 23  对应 1 ~ 24 品
 	private int y;		// 0 ~ 5 对应 最上面 ~ 最下面的琴弦
 	private float time;	// 单位秒 音符在音乐里的对应时间
@@ -120,7 +122,7 @@ public class Note : MonoBehaviour {
 	private Transform shadowTF;
 	private SpriteRenderer[] allRenderer = null;	// 所有和这个音符相关的 SpriteRenderer
 	private Animator ani = null;
-	private bool isReady = false;
+	private bool isReady = true;
 
 
 	public void SetLayer () {
@@ -141,8 +143,9 @@ public class Note : MonoBehaviour {
 		}
 		stringID = Mathf.Clamp(stringID, 0, 5);
 		if (Stage.Main) {
+			Color color = Stage.TheStageSetting.NoteColors[stringID];
 			for (int i = 0; i < ColorChangeSRs.Length; i++) {
-				ColorChangeSRs[i].color = Stage.TheStageSetting.NoteColors[stringID];
+				ColorChangeSRs[i].color = color;
 			}
 		}
 	}

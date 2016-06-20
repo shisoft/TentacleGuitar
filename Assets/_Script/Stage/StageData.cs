@@ -11,12 +11,12 @@ public enum StagePlayMod {
 	Mouse = 2,
 	RealGuitar = 3,
 }
-
+	
 
 [System.Serializable]
 public class StageSetting {
-
-
+	
+	
 	public float NoteSpeed {
 		get {
 			return SpeedScale * noteSpeed;
@@ -44,6 +44,12 @@ public class StageSetting {
 		}
 	}   // 音符距离判定线多远(单位unit)开始上下散开
 
+	public float ShowNoteTime {
+		get {
+			return showNoteTime;
+		}
+	}	  // 提前多少秒显示音符，位于临界点附近时会淡入淡出
+	
 	public float MusicLoadingMaxTime {
 		get {
 			return musicLoadingMaxTime;
@@ -68,17 +74,35 @@ public class StageSetting {
 		}
 	}	 // 琴弦 暗淡时的颜色
 
+	public SpriteRenderer[] Strings {
+		get {
+			return strings;
+		}
+	}	// 琴弦的渲染器
+
+	public SpriteRenderer[] StringLights {
+		get {
+			return stringLights;
+		}
+	}	 // 琴弦光晕的渲染器
+
+	public SpriteRenderer[] TrackHighLights {
+		get {
+			return trackHighLights;
+		}
+	}		// 轨道高亮的渲染器
+
+	public Color TrackHightLightColor {
+		get {
+			return trackHightLightColor;
+		}
+	}	  // 轨道高亮时的颜色
+
 	public Transform NoteHolderTF {
 		get {
 			return noteHolderTF;
 		}
 	}	  // 装载音符的容器
-
-	public Transform TrackBack {
-		get {
-			return trackBack;
-		}
-	}		// 跟着摄影机走的轨道背景
 
 	public Transform MainCamera {
 		get {
@@ -92,26 +116,24 @@ public class StageSetting {
 		}
 		set {
 			MainCamera.position = value;
+			trackBack.position = new Vector3(value.x, trackBack.position.y, trackBack.position.z);
 		}
-	}	 // 摄影机位置
+	}	 // 摄影机的位置
+
+	public Quaternion CameraRot {
+		get {
+			return MainCamera.rotation;
+		}
+		set {
+			MainCamera.rotation = value;
+		}
+	}	 // 摄影机的角度
 
 	public float TrackBackPosY {
 		get {
-			return trackBackPosY;
+			return trackBack.position.y;
 		}
 	}   // 轨道底盘的Y坐标
-
-	public SpriteRenderer[] Strings {
-		get {
-			return strings;
-		}
-	}	// 琴弦的渲染器
-
-	public SpriteRenderer[] StringLights {
-		get {
-			return stringLights;
-		}
-	}	 // 琴弦光晕的渲染器
 
 	public float MissTime {
 		get {
@@ -132,41 +154,69 @@ public class StageSetting {
 		set {
 			playMod = value;
 		}
-	}
+	}	// 游戏模式，自动演示 / 鼠标 / 乐器 / 无
 
 
+	// Note
+	[Header("|Note|")]
 	[SerializeField]
+	[Range(1f, 8f)]
 	private int speedScale = 4;	
 	[SerializeField]
-	private float noteSpeed = 0.05f;	//音符下落速度，程序内部使用，用Editor的Inspector里修改，不要用代码修改
+	private float noteSpeed = 3f;	//音符下落速度，程序内部使用，用Editor的Inspector里修改，不要用代码修改
 	[SerializeField]
 	private float startRotDistance = 8f;
 	[SerializeField]
 	private float startMoveDistance = 4f;
 	[SerializeField]
-	private float musicLoadingMaxTime = 20f;
-	[SerializeField]
-	private float trackBackPosY = 0f;
+	private Transform noteHolderTF;
 	[SerializeField]
 	private Color[] noteColors;	
+	[SerializeField]
+	private float showNoteTime = 3f;
+
+	// String
+	[Header("|String|")]
 	[SerializeField]
 	private Color[] stringColors;
 	[SerializeField]
 	private Color stringDarkColor;	
 	[SerializeField]
-	private Transform noteHolderTF;
+	private SpriteRenderer[] strings;
+	[SerializeField]
+	private SpriteRenderer[] stringLights;
+
+	// Track
+	[Header("|Track|")]
 	[SerializeField]
 	private Transform trackBack;
 	[SerializeField]
-	private Transform mainCamera;
+	private SpriteRenderer[] trackWires;
 	[SerializeField]
 	private Vector3 tracksPivot;
 	[SerializeField]
 	private Vector2 tracksGap;
 	[SerializeField]
-	private SpriteRenderer[] strings;
+	private Color trackWireNormalColor;
 	[SerializeField]
-	private SpriteRenderer[] stringLights;
+	private Color trackWireLightColor;
+	[SerializeField]
+	private Color trackHightLightColor;
+	[SerializeField]
+	private SpriteRenderer[] trackHighLights;
+
+	// Camera
+	[Header("|Camera|")]
+	[SerializeField]
+	private Transform mainCamera;
+
+	// Logic
+	[Header("|Logic|")]
+	[SerializeField]
+	private float musicLoadingMaxTime = 20f;
+
+	// GameSetting
+	[Header("|Stage Setting|")]
 	[SerializeField]
 	private float missTime;
 	[SerializeField]
@@ -201,6 +251,7 @@ public class StageSetting {
 
 
 }
+
 
 
 

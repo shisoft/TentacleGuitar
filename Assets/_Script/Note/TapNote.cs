@@ -24,6 +24,7 @@ public class TapNote : Note {
 		base.SetLayer();
 		base.BeatOffset = -Stage.TheStageSetting.MissTime - 1f;
 		base.State = NoteState.None;
+		IsReady = false;
 		TransformUpdate();
 	}
 
@@ -62,6 +63,11 @@ public class TapNote : Note {
 				break;
 			case StagePlayMod.Mouse:
 			case StagePlayMod.RealGuitar:
+				if (StageMusic.Main.Time - Time > Stage.TheStageSetting.MissTime) {
+					base.BeatOffset = Stage.TheStageSetting.MissTime;
+					base.State = NoteState.Miss;
+					break;
+				}
 				if (base.BeatOffset < -Stage.TheStageSetting.MissTime) {
 					base.State = NoteState.None;
 				} else if (base.BeatOffset < -Stage.TheStageSetting.PerfectTime) {
@@ -84,9 +90,11 @@ public class TapNote : Note {
 
 
 	void TransformUpdate () {
+
 		float prevZ = transform.localPosition.z;
-		float lifeTime = (base.State == NoteState.None ? Mathf.Min(Stage.TheStageSetting.MissTime, Stage.Time - this.Time) : base.BeatOffset);
+		float lifeTime = (base.State == NoteState.None ? Mathf.Min(0f, Stage.Time - this.Time) : Mathf.Min(base.BeatOffset, 0f));
 		float mDistance = Stage.TheStageSetting.StartMoveDistance;
+		float speed = Stage.TheStageSetting.NoteSpeed;
 
 		// Pos
 		Vector3 pos = Stage.TheStageSetting.TrackPos(this.X, this.Y);
@@ -106,11 +114,15 @@ public class TapNote : Note {
 		Vector3 angle = Quaternion.Lerp(
 			Quaternion.Euler(0f, 0f, 0f),
 			Quaternion.Euler(0f, 0f, 90f),
-			Mathf.Abs(lifeTime) * Stage.TheStageSetting.NoteSpeed / Stage.TheStageSetting.StartRotDistance
+			Mathf.Abs(lifeTime) * speed / Stage.TheStageSetting.StartRotDistance
 		).eulerAngles;
 		transform.rotation = Quaternion.Euler(angle);
 		base.ShadowTF.rotation = Quaternion.Euler(90f, 0f, 0f);
+
+		// Scale
+		transform.localScale = Vector3.one * Mathf.Clamp01((Stage.TheStageSetting.ShowNoteTime * speed - Mathf.Abs(pos.z)) * 1f);
 		
+
 	}
 
 

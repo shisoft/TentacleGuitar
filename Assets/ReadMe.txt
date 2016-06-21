@@ -1,14 +1,13 @@
 
-Æ×ÃæÔØÈë ExternalCode\BeatMapStuff\ToBeatMapProgrammer.cs 
+è°±é¢è½½å…¥ ExternalCode\BeatMapStuff\ToBeatMapProgrammer.cs 
 
-Íæ¼ÒÊäÈë ExternalCode\InputStuff\ToImputProgrammer.cs £¨»¹Ã»Ğ´£©
+ç©å®¶è¾“å…¥ ExternalCode\InputStuff\ToImputProgrammer.cs ï¼ˆè¿˜æ²¡å†™ï¼‰
 
 
-ÓÎÏ·¿ªÊ¼Ê± ForTest.cs µÄ Start() »áµ÷ÓÃ×Ô¶¯¶ÁÈ¡¸èÇú²¢¿ªÊ¼Ëæ»úÉú³ÉÒô·û£¬ÒÔºó°Ñ²âÊÔÒôÀÖÒ²push¹ıÈ¥
+æµ‹è¯•ä»£ç éƒ½åœ¨Asssetsæ ¹ç›®å½•ä¸‹çš„ForTest.csé‡Œé¢ï¼Œä¸æƒ³æµ‹è¯•å°±åˆ æ‰å®ƒ å’Œ Sceneé‡Œçš„ ----TestOnly----
 
-²»Ïë²âÊÔµÄ»°¾Í°Ñ ForTest µÄ doTest È¥¹³
+å¼€å¯æµ‹è¯•çš„è¯æŒ‰ A D Q E å¯ä»¥ç§»åŠ¨æ‘„å½±æœº
 
-¿ªÆô²âÊÔµÄ»°°´ A D Q E ¿ÉÒÔÒÆ¶¯ÉãÓ°»ú
+Stage 100è¡Œå·¦å³çš„ #region -------- Public -------- é‡Œçš„å‡½æ•°éƒ½æ˜¯ä¾›å¤–éƒ¨å¬å”¤çš„å·¥å…·ï¼Œç°åœ¨éƒ½æ”¹æˆ static æ–¹æ³•äº†
 
-Stage 100ĞĞ×óÓÒµÄ #region -------- Public -------- ÀïµÄº¯Êı¶¼ÊÇ¹©Íâ²¿ÕÙ»½µÄ¹¤¾ß£¬ÏÖÔÚ¶¼¸Ä³É static ·½·¨ÁË
 

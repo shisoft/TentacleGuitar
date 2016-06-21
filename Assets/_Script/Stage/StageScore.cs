@@ -12,7 +12,12 @@ public class StageScore {
 	public static int Combo = 0;
 	public static float CurrentScore = 0f;
 
-	public static int NoteNum = 0;
+	public static int NoteNum {
+		get {
+			return noteNum;
+		}
+	}
+	private static int noteNum;
 
 	public static readonly float GoodScoreRant = 0.5f;
 	public static readonly int FullScore = 1000000;
@@ -33,9 +38,9 @@ public class StageScore {
 
 
 
-	public static void Init (int noteNum) {
+	public static void Init (int num) {
 		Clear();
-		NoteNum = noteNum;
+		noteNum = num;
 	}
 
 
@@ -46,10 +51,6 @@ public class StageScore {
 			return;
 		}
 
-		if (PerfectNum + GoodNum + MissNum >= NoteNum) {
-			Debug.LogWarning("Can NOT add score now. Because scored note num is equal to note num of this beatmap. Did you forgot to call StageScore.Clear() before load a map ?");
-			return;
-		}
 
 		switch (state) {
 			case NoteState.Perfect:
@@ -81,7 +82,7 @@ public class StageScore {
 		MissNum = 0;
 		MaxCombo = 0;
 		Combo = 0;
-		NoteNum = 0;
+		noteNum = 0;
 		k = -1f;
 	}
 

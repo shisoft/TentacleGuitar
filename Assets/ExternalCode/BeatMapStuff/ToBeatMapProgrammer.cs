@@ -113,7 +113,7 @@ public class BeatMapManager {
 		// ----- Your Code Here -----
 
 
-		return 0;
+		return 1000;
 	}
 
 	#endregion

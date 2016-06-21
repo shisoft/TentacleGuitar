@@ -23,7 +23,10 @@ public enum NoteState {
 
 public class Note : MonoBehaviour {
 
-	
+
+	#region -------- Var --------
+
+
 	public int X {
 		get {
 			return x;
@@ -144,6 +147,10 @@ public class Note : MonoBehaviour {
 	private SpriteRenderer[] allRenderer = null;	// 所有和这个音符相关的 SpriteRenderer
 	private Animator ani = null;
 	private bool isReady = true;
+
+
+
+	#endregion
 
 
 
@@ -275,12 +282,18 @@ public class Note : MonoBehaviour {
 			case StagePlayMod.Auto:
 				BeatOffset = 0f;
 				State = Stage.Time > this.Time ? NoteState.Perfect : NoteState.None;
+				if (prevState != State) {
+					StageScore.AddScore(State);
+				}
 				break;
-			case StagePlayMod.Mouse:
+			case StagePlayMod.MouseAndKeyboard:
 			case StagePlayMod.RealGuitar:
 				if (StageMusic.Main.Time - Time > Stage.TheStageSetting.MissTime) {
 					BeatOffset = Stage.TheStageSetting.MissTime;
 					State = NoteState.Miss;
+					if (prevState != State) {
+						StageScore.AddScore(State);
+					}
 					break;
 				}
 				if (BeatOffset < -Stage.TheStageSetting.MissTime) {
@@ -307,13 +320,13 @@ public class Note : MonoBehaviour {
 	void TapNoteUpdate () {
 
 		float prevZ = transform.localPosition.z;
-		float lifeTime = State == NoteState.None ? 
-			Mathf.Min(0f, Stage.Time - this.Time) : 
-			Mathf.Min(BeatOffset, 0f);
 		float mDistance = Stage.TheStageSetting.StartMoveDistance;
 		float speed = Stage.TheStageSetting.NoteSpeed;
+		float lifeTime = State == NoteState.None ? Stage.Time - this.Time : BeatOffset;
+		if (lifeTime > 0f) {
+			lifeTime *= 0.1f / Stage.TheStageSetting.SpeedScale;
+		}
 
-		
 		// Pos
 		Vector3 pos = Stage.TheStageSetting.TrackPos(this.X, this.Y);
 		pos.z = lifeTime * -Stage.TheStageSetting.NoteSpeed;

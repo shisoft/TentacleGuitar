@@ -11,7 +11,6 @@ public class ForTest : MonoBehaviour {
 	int currentTestTruck = 12;
 	float currentTestAngle = 0f;
 
-
 	void Start () {
 
 		RandomNote = PlayerPrefs.GetInt("Test_RandomNote", 1) == 1;
@@ -107,6 +106,21 @@ public class ForTest : MonoBehaviour {
 
 		RandomNote = GUI.Toggle(GUILayoutUtility.GetRect(170f, 30f), RandomNote, " Random Add Note");
 
+		GUILayout.BeginHorizontal();
+
+		GUI.Label(GUILayoutUtility.GetRect(70f, 24f), "Perfect: " + StageScore.PerfectNum.ToString());
+		GUI.Label(GUILayoutUtility.GetRect(70f, 24f), "Good: " + StageScore.GoodNum.ToString());
+		GUI.Label(GUILayoutUtility.GetRect(70f, 24f), "Miss: " + StageScore.MissNum.ToString());
+
+		GUILayout.EndHorizontal();
+
+
+		GUILayout.BeginHorizontal();
+
+		GUI.Label(GUILayoutUtility.GetRect(70f, 24f), "Score: " + StageScore.CurrentScore.ToString());
+		GUI.Label(GUILayoutUtility.GetRect(70f, 24f), "Num: " + StageScore.NoteNum.ToString());
+
+		GUILayout.EndHorizontal();
 
 
 

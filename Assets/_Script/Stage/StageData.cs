@@ -7,7 +7,7 @@ using System.Collections;
 
 public enum StagePlayMod {
 	Auto = 0,
-	Mouse = 1,
+	MouseAndKeyboard = 1,
 	RealGuitar = 2,
 }
 	
@@ -64,6 +64,11 @@ public class StageSetting {
 
 	#region --- String ---
 
+	public Transform[] StringTFs {
+		get {
+			return stringTFs;
+		}
+	}	 // 琴弦的TF
 
 	public Color[] StringColors {
 		get {
@@ -201,7 +206,9 @@ public class StageSetting {
 	// String
 	[Space(20f)]
 	[SerializeField]
-	private Color stringDarkColor;	
+	private Color stringDarkColor;
+	[SerializeField]
+	private Transform[] stringTFs;
 	[SerializeField]
 	private Color[] stringColors;
 	[SerializeField]
@@ -249,21 +256,8 @@ public class StageSetting {
 	
 
 
-	/// <summary>
-	/// 获取轨道的世界位置
-	/// </summary>
-	/// 
-	/// <param name="trackID">
-	/// 0 表示 第1品  23 表示 第24品
-	/// </param>
-	/// 
-	/// <param name="stringID">
-	/// 0 表示 最上面的琴弦  5 表示最下面的琴弦
-	/// </param>
-	/// 
-	/// <returns>
-	/// 获取到的位置
-	/// </returns>
+
+	
 	public Vector3 TrackPos (int trackID = 0, int stringID = 0) {
 		return new Vector3(
 			tracksPivot.x + trackID * tracksGap.x,
@@ -272,6 +266,14 @@ public class StageSetting {
 		);
 	}
 
+
+
+	public Vector2 TrackID (Vector3 pos) {
+		return new Vector2(
+			(pos.x - tracksPivot.x + tracksGap.x * 0.5f) / tracksGap.x,
+			(pos.y - tracksPivot.y + tracksGap.y) / tracksGap.y
+		);
+	}
 
 
 }

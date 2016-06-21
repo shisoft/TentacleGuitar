@@ -8,7 +8,6 @@ using PathologicalGames;
 
 
 
-
 public class Stage : MonoBehaviour {
 
 	// Instance
@@ -44,6 +43,8 @@ public class Stage : MonoBehaviour {
 	private static bool LoadingLevel = false;
 
 	// Lerp Animation 
+	private Vector3[] StringAimPos = new Vector3[6];
+	private float StringShackRant = 0.8f;
 	private Vector3 CameraAimPos;
 	private Quaternion CameraAimRot;
 	private float CameraMoveRant = 0.1f;
@@ -53,6 +54,7 @@ public class Stage : MonoBehaviour {
 	private float StringColorRant = 0.1f;
 	private float TrackHightLightColorRant = 0.4f;
 	
+
 
 	#region -------- Mono --------
 
@@ -66,8 +68,12 @@ public class Stage : MonoBehaviour {
 		for (int i = 0; i < 24; i++) {
 			SetTrackHightLight(i, false);
 		}
+		for (int i = 0; i < 6; i++) {
+			StringAimPos[i] = TheStageSetting.StringTFs[i].position;
+		}
 		StageMusic.StopToEndCallback += this.CleanNoteOnEnd;
 		BeatMapManager.StageAwake();
+		InputManager.StageAwake();
 	}
 
 
@@ -83,19 +89,24 @@ public class Stage : MonoBehaviour {
 		for (int i = 0; i < 24; i++) {
 			TheStageSetting.TrackHighLights[i].color = Color.Lerp(TheStageSetting.TrackHighLights[i].color, TrackHightLightAimColors[i],TrackHightLightColorRant);
 		}
-
+		for (int i = 0; i < 6; i++) {
+			Vector3 pos = Vector3.Lerp(TheStageSetting.StringTFs[i].position, StringAimPos[i], StringShackRant);
+			//pos.y *= -1f;
+			TheStageSetting.StringTFs[i].position = pos;
+		}
+		InputManager.StageUpdate();
 	}
 
 
 	void FixedUpdate () {
 		BeatMapManager.StageFixedUpdate();
+		InputManager.StageFixedUpdate();
 	}
 
 
 	void LateUpdate () {
 		BeatMapManager.StageLateUpdate();
 	}
-
 
 
 	#endregion
@@ -241,16 +252,27 @@ public class Stage : MonoBehaviour {
 	}
 
 
+	#endregion
 
-	public static void Beat (int fret, int stringID, float Time) {
+
+	#region --- Player Input ---
+
+
+	public static void Beat (int fret, int stringID, float time = -1f) {
 		int len = NotePool.Count;
 		for (int i = 0; i < len; i++) {
 			Note note = NotePool[i].GetComponent<Note>();
 			if (note) {
-				if (note.Time > Time + TheStageSetting.MissTime) {
+				if (note.X != fret || note.Y != stringID) {
+					continue;
+				}
+				if (time < 0f) {
+					time = StageMusic.Main.Time;
+				}
+				if (note.Time > time + TheStageSetting.MissTime) {
 					break;
 				} else {
-					NoteState state = note.Beat(Time);
+					NoteState state = note.Beat(time);
 					if (state != NoteState.None && state != NoteState.Holding) {
 						StageScore.AddScore(state);
 						break;
@@ -258,13 +280,6 @@ public class Stage : MonoBehaviour {
 				}
 			}
 		}
-	}
-
-
-	public static void Hold (int fret, int stringID, float Time) {
-
-
-
 	}
 
 
@@ -280,8 +295,8 @@ public class Stage : MonoBehaviour {
 	/// <param name="stringID"> 琴弦编号 0 - 5 对应 最上面 - 最下面 </param>
 	/// <param name="light"> 发光还是暗淡 </param>
 	/// <param name="rant"> 缓动率 </param>
-	public static void SetStringLight (int stringID, bool light, float rant = -1) {
-		SetStringLight(stringID, light ? TheStageSetting.StringColors[stringID] : TheStageSetting.StringDarkColor, rant);
+	public static void SetStringLight (int stringID, bool light, bool blink = false, float rant = -1) {
+		SetStringLight(stringID, light ? TheStageSetting.StringColors[stringID] : TheStageSetting.StringDarkColor, blink, rant);
 	}
 
 	/// <summary>
@@ -293,8 +308,8 @@ public class Stage : MonoBehaviour {
 	/// <param name="b"></param>
 	/// <param name="a"></param>
 	/// <param name="rant"> 缓动率 </param>
-	public static void SetStringLight (int stringID, float r, float g, float b, float a, float rant = -1f) {
-		SetStringLight(stringID, new Color(r, g, b, a), rant);
+	public static void SetStringLight (int stringID, float r, float g, float b, float a, bool blink = false, float rant = -1f) {
+		SetStringLight(stringID, new Color(r, g, b, a), blink, rant);
 	}
 
 	/// <summary>
@@ -303,7 +318,7 @@ public class Stage : MonoBehaviour {
 	/// <param name="stringID"></param>
 	/// <param name="color"></param>
 	/// <param name="rant"></param>
-	public static void SetStringLight (int stringID, Color color, float rant = -1f) {
+	public static void SetStringLight (int stringID, Color color, bool blink = false, float rant = -1f) {
 		if (!Main) {
 			return;
 		}
@@ -311,7 +326,27 @@ public class Stage : MonoBehaviour {
 			Main.StringColorRant = Mathf.Clamp01(rant);
 		}
 		stringID = Mathf.Clamp(stringID, 0, 5);
-		Main.StringAimColors[stringID] = color;
+		if (blink) {
+			TheStageSetting.Strings[stringID].color = color;
+			TheStageSetting.StringLights[stringID].color = color;
+		} else {
+			Main.StringAimColors[stringID] = color;
+		}
+		
+	}
+
+
+	public static void ShackString (int stringID, float shackScale, float rant = -1f) {
+		if (!Main) {
+			return;
+		}
+		if (rant > 0) {
+			Main.StringShackRant = Mathf.Clamp01(rant);
+		}
+		stringID = Mathf.Clamp(stringID, 0, 5);
+		Vector3 pos = Main.StringAimPos[stringID];
+		pos.y += shackScale;
+		TheStageSetting.StringTFs[stringID].position = pos;
 	}
 
 
@@ -326,8 +361,8 @@ public class Stage : MonoBehaviour {
 	/// <param name="trackID"> 轨道的ID，0-23 对应 1-24 品 </param>
 	/// <param name="light"> 是否加亮 </param>
 	/// <param name="rant"> 缓动率 </param>
-	public static void SetTrackHightLight (int trackID, bool light, float rant = -1f) {
-		SetTrackHightLight(trackID, light ? TheStageSetting.TrackHightLightColor : Color.clear, rant);
+	public static void SetTrackHightLight (int trackID, bool light, bool blink = false, float rant = -1f) {
+		SetTrackHightLight(trackID, light ? TheStageSetting.TrackHightLightColor : Color.clear, blink, rant);
 	}
 
 	/// <summary>
@@ -339,8 +374,8 @@ public class Stage : MonoBehaviour {
 	/// <param name="b"></param>
 	/// <param name="a"></param>
 	/// <param name="rant"></param>
-	public static void SetTrackHightLight (int trackID, float r, float g, float b, float a, float rant = -1f) {
-		SetTrackHightLight(trackID, new Color(r, g, b, a), rant);
+	public static void SetTrackHightLight (int trackID, float r, float g, float b, float a, bool blink = false, float rant = -1f) {
+		SetTrackHightLight(trackID, new Color(r, g, b, a), blink, rant);
 	}
 
 	/// <summary>
@@ -349,7 +384,7 @@ public class Stage : MonoBehaviour {
 	/// <param name="trackID"></param>
 	/// <param name="color"></param>
 	/// <param name="rant"></param>
-	public static void SetTrackHightLight (int trackID, Color color, float rant = -1f) {
+	public static void SetTrackHightLight (int trackID, Color color, bool blink = false, float rant = -1f) {
 		if (!Main) {
 			return;
 		}
@@ -357,7 +392,12 @@ public class Stage : MonoBehaviour {
 			Main.TrackHightLightColorRant = Mathf.Clamp01(rant);
 		}
 		trackID = Mathf.Clamp(trackID, 0, 23);
-		Main.TrackHightLightAimColors[trackID] = color;
+		if (blink) {
+			TheStageSetting.TrackHighLights[trackID].color = color;
+		} else {
+			Main.TrackHightLightAimColors[trackID] = color;
+		}
+		
 	}
 
 
@@ -497,6 +537,8 @@ public class Stage : MonoBehaviour {
 	private void CleanNoteOnEnd () {
 		RemoveAllNotes();
 	}
+
+
 
 	#endregion
 

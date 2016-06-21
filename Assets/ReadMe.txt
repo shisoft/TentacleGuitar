@@ -1,7 +1,7 @@
 
 谱面载入 ExternalCode\BeatMapStuff\ToBeatMapProgrammer.cs 
 
-玩家输入 ExternalCode\InputStuff\ToImputProgrammer.cs （还没写）
+玩家输入 ExternalCode\InputStuff\ToImputProgrammer.cs 
 
 
 测试代码都在Asssets根目录下的ForTest.cs里面，不想测试就删掉它 和 Scene里的 ----TestOnly----

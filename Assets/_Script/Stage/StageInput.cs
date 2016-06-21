@@ -27,18 +27,22 @@ public class StageInput : MonoBehaviour {
 	void Update () {
 
 		if (Stage.TheStageSetting.PlayMod == StagePlayMod.MouseAndKeyboard) {
+
 			if (Input.GetMouseButtonDown(0)) {
 				RaycastHit hit;
 				if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, LayerID)) {
 					Vector2 ID_String = Stage.TheStageSetting.TrackID(hit.point);
-					Stage.ShackString((int)ID_String.y, 0.04f, 0.1f);
+					Stage.ShackString((int)ID_String.y, 0.02f);
 					Stage.Beat((int)ID_String.x, (int)ID_String.y);
 				}
 			}
 
 			if (Input.GetMouseButton(0)) {
-			
+				
+
+
 			}
+
 		}
 
 	}

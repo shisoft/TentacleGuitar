@@ -123,6 +123,30 @@ public class StageSetting {
 	#endregion
 
 
+	#region --- Fret ---
+
+	public SpriteRenderer[] FretWireLights {
+		get {
+			return fretWireLights;
+		}
+	}
+
+	public Color FretWireLightNormalColor {
+		get {
+			return fretWireLightNormalColor;
+		}
+	}
+
+	public Color FretWireLightBloomColor {
+		get {
+			return fretWireLightBloomColor;
+		}
+	}
+
+
+	#endregion
+
+
 	#region --- Camera ---
 
 
@@ -235,7 +259,16 @@ public class StageSetting {
 	private SpriteRenderer[] trackWires;
 	[SerializeField]
 	private SpriteRenderer[] trackHighLights;
-	
+
+
+	// Fret
+	[SerializeField]
+	private Color fretWireLightNormalColor;
+	[SerializeField]
+	private Color fretWireLightBloomColor;
+	[SerializeField]
+	private SpriteRenderer[] fretWireLights;
+
 
 	// Camera
 	[Space(20f)]

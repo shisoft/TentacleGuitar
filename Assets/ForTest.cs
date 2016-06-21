@@ -30,7 +30,7 @@ public class ForTest : MonoBehaviour {
 					Random.Range(0, 24),
 					Random.Range(0, 6),
 					Mathf.Clamp(Stage.Time + Stage.TheStageSetting.ShowNoteTime + Random.Range(0f, 0f), 0f, StageMusic.Main.Length),
-					NoteInfo.NoteType.Tap
+					(NoteInfo.NoteType)Random.Range(0f, 1.03f)
 				));
 			}
 		}
@@ -57,6 +57,7 @@ public class ForTest : MonoBehaviour {
 				currentTestAngle = Mathf.Clamp(currentTestAngle - 10f, -30f, 30f);
 				Stage.RotCamera(new Vector3(0f, currentTestAngle, 0f), 0.1f);
 			}
+
 
 		}
 

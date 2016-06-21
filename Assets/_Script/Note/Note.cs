@@ -224,7 +224,7 @@ public class Note : MonoBehaviour {
 		BeatOffset = -Stage.TheStageSetting.MissTime - 1f;
 		State = NoteState.None;
 		IsReady = false;
-		TapNoteUpdate();
+		NoteUpdate();
 	}
 
 
@@ -240,25 +240,9 @@ public class Note : MonoBehaviour {
 
 		StateUpdate();
 
-		switch (Type) {
-			default:
-			case NoteInfo.NoteType.Tap:
-				TapNoteUpdate();
-				break;
-			case NoteInfo.NoteType.Zero:
-				ZeroNoteUpdate();
-				break;
-			case NoteInfo.NoteType.Hold:
-				HoldNoteUpdate();
-				break;
-			case NoteInfo.NoteType.Slide:
-				SlideNoteUpdate();
-				break;
-		}
+		NoteUpdate();
+
 		
-
-
-
 	}
 
 
@@ -317,7 +301,7 @@ public class Note : MonoBehaviour {
 	}
 
 
-	void TapNoteUpdate () {
+	void NoteUpdate () {
 
 		float prevZ = transform.localPosition.z;
 		float mDistance = Stage.TheStageSetting.StartMoveDistance;
@@ -329,6 +313,9 @@ public class Note : MonoBehaviour {
 
 		// Pos
 		Vector3 pos = Stage.TheStageSetting.TrackPos(this.X, this.Y);
+		if (Type == NoteInfo.NoteType.Zero) {
+			pos.x = Stage.TheStageSetting.CameraPos.x;
+		}
 		pos.z = lifeTime * -Stage.TheStageSetting.NoteSpeed;
 		pos.y = Mathf.Abs(pos.z) < mDistance ?
 			Mathf.Lerp(0f, pos.y, (mDistance - Mathf.Abs(pos.z)) / mDistance) :
@@ -341,51 +328,32 @@ public class Note : MonoBehaviour {
 		}
 		
 		// Rot
-		Vector3 angle = Quaternion.Lerp(
+		Quaternion angle = Type == NoteInfo.NoteType.Zero ? Quaternion.identity : Quaternion.Lerp(
 			Quaternion.Euler(0f, 0f, 0f),
 			Quaternion.Euler(0f, 0f, 90f),
 			Mathf.Abs(lifeTime) * speed / Stage.TheStageSetting.StartRotDistance
-		).eulerAngles;
-		transform.rotation = Quaternion.Euler(angle);
+		);
+		transform.rotation = angle;
 		
 		// Scale
-		transform.localScale = Vector3.one * Mathf.Clamp01((Stage.TheStageSetting.ShowNoteTime * speed - Mathf.Abs(pos.z)) * 1f);
-		
+		Vector3 scl = Vector3.one * Mathf.Clamp01((Stage.TheStageSetting.ShowNoteTime * speed - Mathf.Abs(pos.z)) * 1f);
+		if (Type == NoteInfo.NoteType.Zero) {
+			if (State == NoteState.None) {
+				scl.x *= 6f;
+				scl.y *= 0.3f;
+			} else {
+				scl.x *= 2f;
+				scl.y *= 2f;
+			}
+		}
+		transform.localScale = scl;
+
 		// Shadow
 		ShadowTF.position = new Vector3(pos.x, Stage.TheStageSetting.TrackBackPosY, pos.z);
 		ShadowTF.rotation = Quaternion.Euler(90f, 0f, 0f);
 
 	}
 
-
-	void ZeroNoteUpdate () {
-
-
-
-
-
-
-	}
-
-
-	void HoldNoteUpdate () {
-
-
-
-
-
-
-	}
-
-
-	void SlideNoteUpdate () {
-
-
-
-
-
-
-	}
 
 
 

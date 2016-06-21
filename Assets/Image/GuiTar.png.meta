@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 01672239708ceeb4ebe933bcc65002e4
-timeCreated: 1466404745
+timeCreated: 1466481640
 licenseType: Pro
 TextureImporter:
   fileIDToRecycleName:
@@ -19,6 +19,7 @@ TextureImporter:
     21300024: RectLight
     21300026: NoteShadow
     21300028: TrackLight
+    21300030: FretWireLight
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -288,6 +289,17 @@ TextureImporter:
         height: 59
       alignment: 7
       pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: FretWireLight
+      rect:
+        serializedVersion: 2
+        x: 108
+        y: 306
+        width: 16
+        height: 65
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
     outline: []

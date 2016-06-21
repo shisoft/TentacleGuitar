@@ -51,9 +51,10 @@ public class Stage : MonoBehaviour {
 	private float CameraRotRant = 0.1f;
 	private Color[] StringAimColors = new Color[6];
 	private Color[] TrackHightLightAimColors = new Color[24];
+	private Color[] FretWireLightAimColors = new Color[25];
 	private float StringColorRant = 0.1f;
 	private float TrackHightLightColorRant = 0.4f;
-	
+	private float FretWireLightColorRant = 0.1f;
 
 
 	#region -------- Mono --------
@@ -67,6 +68,9 @@ public class Stage : MonoBehaviour {
 		TrackHightLightAimColors.Initialize();
 		for (int i = 0; i < 24; i++) {
 			SetTrackHightLight(i, false);
+		}
+		for (int i = 0; i < 25; i++) {
+			SetFretWireLight(i, false);
 		}
 		for (int i = 0; i < 6; i++) {
 			StringAimPos[i] = TheStageSetting.StringTFs[i].position;
@@ -90,11 +94,16 @@ public class Stage : MonoBehaviour {
 			TheStageSetting.TrackHighLights[i].color = Color.Lerp(TheStageSetting.TrackHighLights[i].color, TrackHightLightAimColors[i],TrackHightLightColorRant);
 		}
 		for (int i = 0; i < 6; i++) {
-			Vector3 pos = Vector3.Lerp(TheStageSetting.StringTFs[i].position, StringAimPos[i], StringShackRant);
-			//pos.y *= -1f;
+			Vector3 pos = StringAimPos[i] + (StringAimPos[i] - TheStageSetting.StringTFs[i].position) * StringShackRant;
 			TheStageSetting.StringTFs[i].position = pos;
 		}
+		for (int i = 0; i < 25; i++) {
+			TheStageSetting.FretWireLights[i].color = Color.Lerp(TheStageSetting.FretWireLights[i].color, FretWireLightAimColors[i], FretWireLightColorRant);
+		}
+
+		// Msg
 		InputManager.StageUpdate();
+
 	}
 
 
@@ -161,7 +170,7 @@ public class Stage : MonoBehaviour {
 	/// </summary>
 	/// <param name="trackID"> 轨道的ID 0 - 23 对应 1 - 24 品 </param>
 	/// <param name="rant"> 缓动率，1表示一下移动过去，0表示不动 </param>
-	public static void MoveCamera (int trackID, float rant = -1f) {
+	public static void MoveCamera (int trackID, float rant = 0.1f) {
 		if (!Main) {
 			return;
 		}
@@ -174,7 +183,7 @@ public class Stage : MonoBehaviour {
 	/// </summary>
 	/// <param name="y"> 高度数值，单位unit </param>
 	/// <param name="rant"> 缓动率 </param>
-	public static void MoveCameraHeight (float y, float rant = -1f) {
+	public static void MoveCameraHeight (float y, float rant = 0.1f) {
 		if (!Main) {
 			return;
 		}
@@ -187,13 +196,11 @@ public class Stage : MonoBehaviour {
 	/// </summary>
 	/// <param name="pos"> 坐标 </param>
 	/// <param name="rant"> 缓动率 </param>
-	public static void MoveCamera (Vector3 pos, float rant = -1f) {
+	public static void MoveCamera (Vector3 pos, float rant = 0.1f) {
 		if (!Main) {
 			return;
 		}
-		if (rant > 0f) {
-			Main.CameraMoveRant = Mathf.Clamp01(rant);
-		}
+		Main.CameraMoveRant = Mathf.Clamp01(rant);
 		Main.CameraAimPos = pos;
 	}
 
@@ -202,7 +209,7 @@ public class Stage : MonoBehaviour {
 	/// </summary>
 	/// <param name="rot"> 角度，欧拉角 </param>
 	/// <param name="rant"> 缓动率 </param>
-	public static void RotCamera (Vector3 rot, float rant = -1f) {
+	public static void RotCamera (Vector3 rot, float rant = 0.1f) {
 		if (!Main) {
 			return;
 		}
@@ -211,9 +218,7 @@ public class Stage : MonoBehaviour {
 			Mathf.Clamp(rot.y, -26f, 26f),
 			Mathf.Clamp(rot.z, -6f, 6f)
 		);
-		if (rant > 0f) {
-			Main.CameraRotRant = Mathf.Clamp01(rant);
-		}
+		Main.CameraRotRant = Mathf.Clamp01(rant);
 		Main.CameraAimRot = Quaternion.Euler(rot);
 	}
 
@@ -263,7 +268,10 @@ public class Stage : MonoBehaviour {
 		for (int i = 0; i < len; i++) {
 			Note note = NotePool[i].GetComponent<Note>();
 			if (note) {
-				if (note.X != fret || note.Y != stringID) {
+				if (note.Y != stringID) {
+					continue;
+				}
+				if (note.X != fret && note.Type != NoteInfo.NoteType.Zero) {
 					continue;
 				}
 				if (time < 0f) {
@@ -295,7 +303,7 @@ public class Stage : MonoBehaviour {
 	/// <param name="stringID"> 琴弦编号 0 - 5 对应 最上面 - 最下面 </param>
 	/// <param name="light"> 发光还是暗淡 </param>
 	/// <param name="rant"> 缓动率 </param>
-	public static void SetStringLight (int stringID, bool light, bool blink = false, float rant = -1) {
+	public static void SetStringLight (int stringID, bool light, bool blink = false, float rant = 0.1f) {
 		SetStringLight(stringID, light ? TheStageSetting.StringColors[stringID] : TheStageSetting.StringDarkColor, blink, rant);
 	}
 
@@ -308,7 +316,7 @@ public class Stage : MonoBehaviour {
 	/// <param name="b"></param>
 	/// <param name="a"></param>
 	/// <param name="rant"> 缓动率 </param>
-	public static void SetStringLight (int stringID, float r, float g, float b, float a, bool blink = false, float rant = -1f) {
+	public static void SetStringLight (int stringID, float r, float g, float b, float a, bool blink = false, float rant = 0.1f) {
 		SetStringLight(stringID, new Color(r, g, b, a), blink, rant);
 	}
 
@@ -318,13 +326,11 @@ public class Stage : MonoBehaviour {
 	/// <param name="stringID"></param>
 	/// <param name="color"></param>
 	/// <param name="rant"></param>
-	public static void SetStringLight (int stringID, Color color, bool blink = false, float rant = -1f) {
+	public static void SetStringLight (int stringID, Color color, bool blink = false, float rant = 0.1f) {
 		if (!Main) {
 			return;
 		}
-		if (rant > 0) {
-			Main.StringColorRant = Mathf.Clamp01(rant);
-		}
+		Main.StringColorRant = Mathf.Clamp01(rant);
 		stringID = Mathf.Clamp(stringID, 0, 5);
 		if (blink) {
 			TheStageSetting.Strings[stringID].color = color;
@@ -336,13 +342,11 @@ public class Stage : MonoBehaviour {
 	}
 
 
-	public static void ShackString (int stringID, float shackScale, float rant = -1f) {
+	public static void ShackString (int stringID, float shackScale, float rant = 0.9f) {
 		if (!Main) {
 			return;
 		}
-		if (rant > 0) {
-			Main.StringShackRant = Mathf.Clamp01(rant);
-		}
+		Main.StringShackRant = Mathf.Clamp01(rant);
 		stringID = Mathf.Clamp(stringID, 0, 5);
 		Vector3 pos = Main.StringAimPos[stringID];
 		pos.y += shackScale;
@@ -361,7 +365,7 @@ public class Stage : MonoBehaviour {
 	/// <param name="trackID"> 轨道的ID，0-23 对应 1-24 品 </param>
 	/// <param name="light"> 是否加亮 </param>
 	/// <param name="rant"> 缓动率 </param>
-	public static void SetTrackHightLight (int trackID, bool light, bool blink = false, float rant = -1f) {
+	public static void SetTrackHightLight (int trackID, bool light, bool blink = false, float rant = 0.1f) {
 		SetTrackHightLight(trackID, light ? TheStageSetting.TrackHightLightColor : Color.clear, blink, rant);
 	}
 
@@ -374,7 +378,7 @@ public class Stage : MonoBehaviour {
 	/// <param name="b"></param>
 	/// <param name="a"></param>
 	/// <param name="rant"></param>
-	public static void SetTrackHightLight (int trackID, float r, float g, float b, float a, bool blink = false, float rant = -1f) {
+	public static void SetTrackHightLight (int trackID, float r, float g, float b, float a, bool blink = false, float rant = 0.1f) {
 		SetTrackHightLight(trackID, new Color(r, g, b, a), blink, rant);
 	}
 
@@ -384,13 +388,11 @@ public class Stage : MonoBehaviour {
 	/// <param name="trackID"></param>
 	/// <param name="color"></param>
 	/// <param name="rant"></param>
-	public static void SetTrackHightLight (int trackID, Color color, bool blink = false, float rant = -1f) {
+	public static void SetTrackHightLight (int trackID, Color color, bool blink = false, float rant = 0.1f) {
 		if (!Main) {
 			return;
 		}
-		if (rant > 0) {
-			Main.TrackHightLightColorRant = Mathf.Clamp01(rant);
-		}
+		Main.TrackHightLightColorRant = Mathf.Clamp01(rant);
 		trackID = Mathf.Clamp(trackID, 0, 23);
 		if (blink) {
 			TheStageSetting.TrackHighLights[trackID].color = color;
@@ -402,6 +404,58 @@ public class Stage : MonoBehaviour {
 
 
 	#endregion
+
+
+	#region --- FretWireLight ---
+
+
+	/// <summary>
+	/// 让指定编号的品弦发光（默认颜色）或暗淡
+	/// </summary>
+	/// <param name="stringID"> 品弦编号 0 - 24 对应 最左边 - 最右边 </param>
+	/// <param name="light"> 发光还是暗淡 </param>
+	/// <param name="rant"> 缓动率 </param>
+	public static void SetFretWireLight (int fretWireID, bool light, bool blink = false, float rant = 0.1f) {
+		SetFretWireLight(fretWireID, light ? TheStageSetting.FretWireLightBloomColor : TheStageSetting.FretWireLightNormalColor, blink, rant);
+	}
+
+	/// <summary>
+	/// 通过rbga数值调整指定编号的品弦的颜色
+	/// </summary>
+	/// <param name="stringID"> 品弦编号（同上） </param>
+	/// <param name="r"> 该颜色的红色通道，下面同理 </param>
+	/// <param name="g"></param>
+	/// <param name="b"></param>
+	/// <param name="a"></param>
+	/// <param name="rant"> 缓动率 </param>
+	public static void SetFretWireLight (int fretWireID, float r, float g, float b, float a, bool blink = false, float rant = 0.1f) {
+		SetFretWireLight(fretWireID, new Color(r, g, b, a), blink, rant);
+	}
+
+	/// <summary>
+	/// 和上面的函数一样，只是把rgba改成直接用Unity的Color类
+	/// </summary>
+	/// <param name="stringID"></param>
+	/// <param name="color"></param>
+	/// <param name="rant"></param>
+	public static void SetFretWireLight (int fretWireID, Color color, bool blink = false, float rant = 0.1f) {
+		if (!Main) {
+			return;
+		}
+		Main.FretWireLightColorRant = Mathf.Clamp01(rant);
+		fretWireID = Mathf.Clamp(fretWireID, 0, 24);
+		if (blink) {
+			TheStageSetting.FretWireLights[fretWireID].color = color;
+			TheStageSetting.FretWireLights[fretWireID].color = color;
+		} else {
+			Main.FretWireLightAimColors[fretWireID] = color;
+		}
+	}
+
+
+
+	#endregion
+
 
 
 	#endregion

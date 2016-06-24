@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 01672239708ceeb4ebe933bcc65002e4
-timeCreated: 1466481640
+timeCreated: 1466746523
 licenseType: Pro
 TextureImporter:
   fileIDToRecycleName:
@@ -20,6 +20,11 @@ TextureImporter:
     21300026: NoteShadow
     21300028: TrackLight
     21300030: FretWireLight
+    21300032: GuiTar_Body
+    21300034: GuiTar_Head
+    21300036: TitleBack
+    21300038: DownLoadIcon
+    21300040: WhitePaper
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -125,9 +130,9 @@ TextureImporter:
     - name: String
       rect:
         serializedVersion: 2
-        x: 136
-        y: 477
-        width: 10
+        x: 138
+        y: 375
+        width: 88
         height: 10
       alignment: 9
       pivot: {x: 0, y: 0.5}
@@ -298,6 +303,101 @@ TextureImporter:
         y: 306
         width: 16
         height: 65
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: GuiTar_Body
+      rect:
+        serializedVersion: 2
+        x: 555
+        y: 18
+        width: 330
+        height: 213
+      alignment: 9
+      pivot: {x: 0.85, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 49.5, y: -22.5}
+        - {x: 49.5, y: 22.5}
+        - {x: -17.5, y: 26.5}
+        - {x: 28.5, y: 58.5}
+        - {x: 36.5, y: 69.5}
+        - {x: 16.5, y: 104.5}
+        - {x: -107.5, y: 89.5}
+        - {x: -174.5, y: 106.5}
+        - {x: -231.5, y: 106.5}
+        - {x: -252.5, y: 91.5}
+        - {x: -262.5, y: 72.5}
+        - {x: -280.5, y: 23.5}
+        - {x: -280.5, y: -68.5}
+        - {x: -248.5, y: -106.5}
+        - {x: -56.5, y: -106.5}
+        - {x: 2.5, y: -81.5}
+        - {x: -21.5, y: -59.5}
+        - {x: -15.5, y: -25.5}
+    - name: GuiTar_Head
+      rect:
+        serializedVersion: 2
+        x: 895
+        y: 85
+        width: 149
+        height: 75
+      alignment: 9
+      pivot: {x: 0.1, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 1.0999756, y: 37.5}
+        - {x: -12.900024, y: 25.5}
+        - {x: -14.900024, y: 20.5}
+        - {x: -14.900024, y: -29.5}
+        - {x: 23.099976, y: -37.5}
+        - {x: 134.09998, y: -37.5}
+        - {x: 134.09998, y: 16.5}
+        - {x: 81.099976, y: 37.5}
+    - name: TitleBack
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 326
+        width: 89
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -43.5, y: 20}
+        - {x: -44.5, y: 18}
+        - {x: -44.5, y: -20}
+        - {x: 43.5, y: -20}
+        - {x: 44.5, y: -18}
+        - {x: 44.5, y: 20}
+    - name: DownLoadIcon
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 345
+        width: 83
+        height: 75
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -32.5, y: 37.5}
+        - {x: -41.5, y: 18.5}
+        - {x: -41.5, y: -23.5}
+        - {x: -19.5, y: -37.5}
+        - {x: 8.5, y: -37.5}
+        - {x: 41.5, y: -14.5}
+        - {x: 41.5, y: 16.5}
+        - {x: 22.5, y: 37.5}
+    - name: WhitePaper
+      rect:
+        serializedVersion: 2
+        x: 552
+        y: 472
+        width: 4
+        height: 4
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

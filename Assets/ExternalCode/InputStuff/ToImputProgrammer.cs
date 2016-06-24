@@ -9,7 +9,6 @@ using System.Collections;
 /// 
 /// 1、在玩家用乐器输入信号时，将信息专递给游戏主体
 /// 
-/// 
 /// </summary>
 public class InputManager {
 
@@ -63,16 +62,23 @@ public class InputManager {
 	}
 
 
+
+
+
 	#endregion
 
 
-	#region -------- Stage Tools ---------
+	#region -------- Stage API ---------
 
 
 	// 用 Stage.Beat(int, int, float) 单次击打一下某个位置，
-	// 注意，你的系统必须传第三个参数，而且必须要自己计算（不能用Stage.Time 或者 StageMusic.Main.Time），否则打击会有延迟
-
+	
 	// 用 StageInput.Hold(int, int) 按住某个位置一帧，确保在 StageUpdate 函数里调用
+
+	// 用 StageMicrophone.SamplePosition() 获取当前麦克风正在录制的位置，单位Sample（秒x44100)
+
+	// 用 StageMicrophone.GetData() 获取一段已经录制的音频，这个音频是声音最原始的震动，采样率44100次每秒。
+
 
 	#endregion
 

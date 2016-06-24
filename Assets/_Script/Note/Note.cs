@@ -272,7 +272,7 @@ public class Note : MonoBehaviour {
 				break;
 			case StagePlayMod.MouseAndKeyboard:
 			case StagePlayMod.RealGuitar:
-				if (StageMusic.Main.Time - Time > Stage.TheStageSetting.MissTime) {
+				if (Stage.Time - Time > Stage.TheStageSetting.MissTime) {
 					BeatOffset = Stage.TheStageSetting.MissTime;
 					State = NoteState.Miss;
 					if (prevState != State) {

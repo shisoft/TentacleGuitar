@@ -119,14 +119,12 @@ public class BeatMapManager {
 	#endregion
 
 
-	#region -------- Stage Tools --------
+	#region -------- Stage API --------
 
 
-	// 请看 Stage.cs 里的 #region -------- Public -------- 150行附近
-	// 里面的东西可以随便用
+	// 请看 Stage.cs 里的 #region -------- Public -------- (170行附近)
 	
 	
-
 	#endregion
 
 

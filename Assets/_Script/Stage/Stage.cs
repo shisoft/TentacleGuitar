@@ -5,13 +5,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using PathologicalGames;
+using CodeStage.AntiCheat.ObscuredTypes;
 
-
+//http://tentacleguitar.azurewebsites.net/
 
 public class Stage : MonoBehaviour {
 
+
+	#region -------- Param --------
+
 	// Instance
 	public static Stage Main;
+
 	public static StageSetting TheStageSetting {
 		get {
 			return Main.stageSetting;
@@ -28,10 +33,20 @@ public class Stage : MonoBehaviour {
 	}
 	private static SpawnPool notePool = null;
 
+	public static SpawnPool SongCardPool {
+		get {
+			if (!songCardPool) {
+				songCardPool = PoolManager.Pools["SongCard"];
+			}
+			return songCardPool;
+		}
+	}
+	private static SpawnPool songCardPool = null;
+
 	// Quick Cache
 	public static float Time {
 		get {
-			return StageMusic.Main.Time;
+			return GamePlaying ? StageMusic.Main.Time : UnityEngine.Time.time;
 		}
 	}
 
@@ -40,7 +55,10 @@ public class Stage : MonoBehaviour {
 	private StageSetting stageSetting;
 
 	// Logic
-	private static bool LoadingLevel = false;
+	public static bool Loading = false;
+	public static bool GamePlaying = false;
+	public static bool IsSignedIn = false;
+	public static Dictionary<string, SongCard> SongCards = new Dictionary<string,SongCard>();
 
 	// Lerp Animation 
 	private Vector3[] StringAimPos = new Vector3[6];
@@ -57,46 +75,122 @@ public class Stage : MonoBehaviour {
 	private float FretWireLightColorRant = 0.1f;
 
 
+	#endregion
+
+
 	#region -------- Mono --------
 
 
 	void Awake () {
 		Main = this;
-		CameraAimPos = TheStageSetting.CameraPos;
-		CameraAimRot = TheStageSetting.CameraRot;
-		TheStageSetting.StringColors.CopyTo(StringAimColors, 0);
-		TrackHightLightAimColors.Initialize();
-		for (int i = 0; i < 24; i++) {
-			SetTrackHightLight(i, false);
-		}
-		for (int i = 0; i < 25; i++) {
-			SetFretWireLight(i, false);
-		}
+		TheStageSetting.UserName = ObscuredPrefs.GetString("UserName", "");
+		InitAimTransform();
 		for (int i = 0; i < 6; i++) {
-			StringAimPos[i] = TheStageSetting.StringTFs[i].position;
+			Main.StringAimPos[i] = TheStageSetting.StringTFs[i].position;
 		}
+		TheStageSetting.PlayMod = StagePlayMod.Auto;
+		StageScore.Close();
 		StageMusic.StopToEndCallback += this.CleanNoteOnEnd;
 		BeatMapManager.StageAwake();
 		InputManager.StageAwake();
+		NetworkManager.StageAwake();
+	}
+
+
+	void Start () {
+		ObscuredString token = ObscuredPrefs.GetString("LoginToken", "");
+		if (!string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(TheStageSetting.UserName)) {
+			StartLogin(false);
+		}
 	}
 
 
 	void Update () {
+
+
+		/*
+		if (GamePlaying && StageMicrophone.IsReady) {
+			float[] f = StageMicrophone.GetData(StageMicrophone.SamplePosition() - 44100, 44100);
+			for (int i = 0; i < f.Length - 1; i++) {
+				Debug.DrawLine(
+					new Vector3((float)(i-1), f[i] * 10000f, 0f),
+					new Vector3((float)i, f[i+1] * 10000f, 0f),
+					Color.red
+				);
+			}
+			StageMicrophone.Main.Source.time = Mathf.Max(((float)StageMicrophone.SamplePosition() / 44100f) - 0.02f, 0f);
+		}
+		//*/
+
+
+
+		// Ani
+
+		TheStageSetting.MenuAni.SetBool("GamePlaying", GamePlaying);
+		TheStageSetting.MainBtnAni.SetBool("SignedIn", IsSignedIn);
+
+		// Menu Random Note
+
+		if (!GamePlaying) {
+			RandomAddNote(
+				Time + TheStageSetting.ShowNoteTime,
+				0, 24, 0, 6, 0f, 0.9f
+			);
+		}
 		
 		// Aim Movement
+		
+		TheStageSetting.TitleBGM.volume = Mathf.Lerp(
+			TheStageSetting.TitleBGM.volume, 
+			GamePlaying ? 0f: 1f, 
+			0.02f
+		);
+
+		if (GamePlaying && TheStageSetting.TitleBGM.volume < 0.01f) {
+			TheStageSetting.TitleBGM.Pause();
+		}
+
+		TheStageSetting.TrackBackSR.color = Color.Lerp(
+			TheStageSetting.TrackBackSR.color,
+			GamePlaying ? TheStageSetting.TrackBackColor : Color.clear,
+			0.01f
+		);
+
+		TheStageSetting.GuitarBody.color = TheStageSetting.GuitarHead.color = Color.Lerp(
+			TheStageSetting.GuitarBody.color,
+			GamePlaying ? Color.clear : TheStageSetting.GuitarColor,
+			0.01f
+		); 
+
+		TheStageSetting.MainCamera.localPosition = Vector3.Lerp(
+			TheStageSetting.MainCamera.localPosition,
+			GamePlaying ? TheStageSetting.CameraPlayingPos : TheStageSetting.CameraMenuPos,
+			0.16f
+		);
+
+		TheStageSetting.MainCamera.localRotation = Quaternion.Lerp(
+			TheStageSetting.MainCamera.localRotation,
+			GamePlaying ? TheStageSetting.CameraPlayingRot : TheStageSetting.CameraMenuRot,
+			0.16f
+		);
+
 		TheStageSetting.CameraPos = Vector3.Lerp(TheStageSetting.CameraPos, CameraAimPos, CameraMoveRant);
 		TheStageSetting.CameraRot = Quaternion.Lerp(TheStageSetting.CameraRot, CameraAimRot, CameraRotRant);
+		
 		for (int i = 0; i < 6; i++) {
 			TheStageSetting.Strings[i].color = Color.Lerp(TheStageSetting.Strings[i].color, StringAimColors[i], StringColorRant);
 			TheStageSetting.StringLights[i].color = Color.Lerp(TheStageSetting.Strings[i].color, StringAimColors[i], StringColorRant);
 		}
+		
 		for (int i = 0; i < 24; i++) {
 			TheStageSetting.TrackHighLights[i].color = Color.Lerp(TheStageSetting.TrackHighLights[i].color, TrackHightLightAimColors[i],TrackHightLightColorRant);
 		}
+		
 		for (int i = 0; i < 6; i++) {
 			Vector3 pos = StringAimPos[i] + (StringAimPos[i] - TheStageSetting.StringTFs[i].position) * StringShackRant;
 			TheStageSetting.StringTFs[i].position = pos;
 		}
+		
 		for (int i = 0; i < 25; i++) {
 			TheStageSetting.FretWireLights[i].color = Color.Lerp(TheStageSetting.FretWireLights[i].color, FretWireLightAimColors[i], FretWireLightColorRant);
 		}
@@ -110,16 +204,89 @@ public class Stage : MonoBehaviour {
 	void FixedUpdate () {
 		BeatMapManager.StageFixedUpdate();
 		InputManager.StageFixedUpdate();
+		NetworkManager.StageFixedUpdate();
 	}
 
 
 	void LateUpdate () {
 		BeatMapManager.StageLateUpdate();
+		NetworkManager.StageLateUpdate();
 	}
 
 
 	#endregion
 
+
+	#region -------- UI ---------
+
+
+	public void StartLogin (bool useRealPassword = true) {
+		if (!Loading && Main && !GamePlaying) {
+			Main.StopAllCoroutines();
+			Loading = true;
+			TheStageSetting.LoginUIInteractable = false;
+			ObscuredString token = "";
+			if (!useRealPassword) {
+				token = ObscuredPrefs.GetString("LoginToken", "");
+			}
+			Main.StartCoroutine(
+				NetworkManager.TryLogin(
+					TheStageSetting.UserName,
+					useRealPassword ? TheStageSetting.Password : token,
+					useRealPassword
+				)
+			);
+			Invoke(CancelLogin_FuncName, NetworkManager.LoginLimitTime);
+		} else {
+			Debug.LogWarning("Loading Now. Can not start login.");
+		}
+	}
+
+
+	public void GotoSignUp () {
+		if (!Loading && !GamePlaying) {
+			Application.OpenURL(TheStageSetting.SignupURL);
+		}
+	}
+
+
+	public void StartSignOut () {
+		if (!Loading && Main && !GamePlaying) {
+			Main.StopAllCoroutines();
+			Loading = true;
+			TheStageSetting.LoginUIInteractable = false;
+			Main.StartCoroutine(NetworkManager.TryLogout());
+			Invoke(CancelLogout_FuncName, NetworkManager.LoginLimitTime);
+		} else {
+			Debug.LogWarning("Loading Now. Can not start logout.");
+		}
+	}
+
+
+	public static void TryStartSong (string id) {
+		if (!Main || Loading) { return; }
+		if (NetworkManager.SongIsDownLoaded(id)) {
+			StartGame(new SongInitInfo(
+				NetworkManager.GetSongLocalPath(id),
+				NetworkManager.GetBeatMapLocalPath(id),
+				4,
+				StagePlayMod.RealGuitar
+			));
+		} else if (Main) {
+			if (SongCards.ContainsKey(id) && SongCards[id] && !SongCards[id].IsDownloading) {
+				SongCards[id].IsDownloading = true;
+				Main.StartCoroutine(NetworkManager.TryDownloadSong(id));
+			}
+		}
+	}
+
+
+
+
+	
+
+
+	#endregion
 
 
 	#region -------- Public --------
@@ -130,9 +297,14 @@ public class Stage : MonoBehaviour {
 
 	public static void StartGame (SongInitInfo info) {
 		// Start Load
-		if(!LoadingLevel || !Main){
-			Main.StopAllCoroutines();
-			Main.StartCoroutine(Main.LoadLevel(info));
+		if (!Loading && Main) {
+			if (NetworkManager.IsLogedIn) {
+				InitAimTransform();
+				Main.StopAllCoroutines();
+				Main.StartCoroutine(Main.LoadLevel(info));
+			} else {
+				Debug.LogWarning("Can not start a level now! No user is signed in.");
+			}
 		} else {
 			Debug.LogWarning("Can not start a level now! Another level is loading...");
 		}
@@ -141,8 +313,18 @@ public class Stage : MonoBehaviour {
 
 
 	public static void StopGame () {
+		if (Loading || !Main) {
+			return;
+		}
 		StageMusic.Main.Clear();
+		StageMicrophone.MicrophoneStop();
 		BeatMapManager.ClearBeatMap();
+		GamePlaying = false;
+		TheStageSetting.TitleBGM.UnPause();
+		InitAimTransform();
+		RemoveAllNotes();
+		TheStageSetting.PlayMod = StagePlayMod.Auto;
+		StageScore.Close();
 	}
 
 
@@ -229,6 +411,27 @@ public class Stage : MonoBehaviour {
 	#region --- Note ---
 
 
+	public static void RandomAddNote (float time, int minFret, int maxFret, int minString, int maxString, float minType, float maxType) {
+
+		time = Mathf.Max(time, 0f);
+		minFret = Mathf.Clamp(minFret, 0, 24);
+		maxFret = Mathf.Clamp(maxFret, 0, 24);
+		minString = Mathf.Clamp(minString, 0, 6);
+		maxString = Mathf.Clamp(maxString, 0, 6);
+		minType = Mathf.Clamp(minType, 0f, 3.99f);
+		maxType = Mathf.Clamp(maxType, 0f, 3.99f);
+
+		Stage.AddNote(new NoteInfo(
+			Random.Range(minFret, maxFret),
+			Random.Range(minString, maxString),
+			time,
+			(NoteInfo.NoteType)Random.Range(minType, maxType)
+		));
+
+	}
+
+
+
 	/// <summary>
 	/// 添加一个音符到场景中，主线程
 	/// 调用的太早的话Stage.Main会为空，请使用 region -> MonoMessage 里提供的函数调用
@@ -254,6 +457,19 @@ public class Stage : MonoBehaviour {
 	/// </summary>
 	public static void RemoveAllNotes () {
 		NotePool.DespawnAllToDefault();
+	}
+
+
+	public static void RemoveAllNotes (NoteState state) {
+		int len = NotePool.Count;
+		for (int i = 0; i < len; i++) {
+			Note note = NotePool[i].GetComponent<Note>();
+			if (note && note.State == state) {
+				NotePool.DespawnToDefault(NotePool[i]);
+				i--;
+				len--;
+			}
+		}
 	}
 
 
@@ -290,6 +506,12 @@ public class Stage : MonoBehaviour {
 		}
 	}
 
+
+	public static void Hold (int fret, int stringID) {
+
+
+
+	}
 
 
 	#endregion
@@ -419,6 +641,7 @@ public class Stage : MonoBehaviour {
 		SetFretWireLight(fretWireID, light ? TheStageSetting.FretWireLightBloomColor : TheStageSetting.FretWireLightNormalColor, blink, rant);
 	}
 
+
 	/// <summary>
 	/// 通过rbga数值调整指定编号的品弦的颜色
 	/// </summary>
@@ -431,6 +654,7 @@ public class Stage : MonoBehaviour {
 	public static void SetFretWireLight (int fretWireID, float r, float g, float b, float a, bool blink = false, float rant = 0.1f) {
 		SetFretWireLight(fretWireID, new Color(r, g, b, a), blink, rant);
 	}
+
 
 	/// <summary>
 	/// 和上面的函数一样，只是把rgba改成直接用Unity的Color类
@@ -457,6 +681,106 @@ public class Stage : MonoBehaviour {
 	#endregion
 
 
+	#region --- NetWork ---
+
+
+	public static void LoginDone (bool success, bool cleanPassword = false, string message = "") {
+		Loading = false;
+		if (Main) {
+			Main.CancelInvoke(CancelLogin_FuncName);
+		}
+		if (success) {
+			IsSignedIn = true;
+			Main.StartCoroutine(NetworkManager.TryLoadSongListInfo());
+			Debug.Log("Login Success. name = " + TheStageSetting.UserName);
+
+
+
+			ObscuredPrefs.SetString("UserName", TheStageSetting.UserName);
+			ObscuredPrefs.SetString("LoginToken", NetworkManager.LoginToken);
+		} else {
+			Debug.LogError(message);
+			if (Main) {
+				Main.StopAllCoroutines();
+			}
+		}
+	}
+
+
+	public static void LogoutDone (bool success, bool forgotPassword = false, string message = "") {
+		Loading = false;
+		if (Main) {
+			Main.CancelInvoke(CancelLogout_FuncName);
+		}
+		if (success) {
+			IsSignedIn = false;
+			TheStageSetting.LoginUIInteractable = true;
+
+
+		} else {
+			Debug.LogError(message);
+			if (Main) {
+				Main.StopAllCoroutines();
+			}
+
+		}
+	}
+
+
+	public static void LoadSongListDone (bool success, string message = "") {
+		Loading = false;
+		SongCardPool.DespawnAllToDefault();
+		SongCards.Clear();
+		if (success) {
+			NetworkManager.SongInfo[] infos = NetworkManager.SongList;
+			for (int i = 0; i < infos.Length; i++) {
+				Transform tf = SongCardPool.SpawnToDefault("SongCard");
+				tf.localScale = Vector3.one;
+				SongCard sc = tf.GetComponent<SongCard>();
+				if (sc) {
+					sc.Init(
+						infos[i].ID,
+						infos[i].Title,
+						infos[i].Level,
+						NetworkManager.SongIsDownLoaded(infos[i].ID)
+					);
+					SongCards.Add(infos[i].ID, sc);
+
+				}
+			}
+		} else {
+			Debug.LogError(message);
+			if (Main) {
+				Main.StopAllCoroutines();
+			}
+		}
+	}
+
+
+	public static void DownLoadDone (bool success, string id, string message = "") {
+		Loading = false;
+		if (SongCards.ContainsKey(id) && SongCards[id]) {
+			SongCards[id].IsDownloading = false;
+		}
+		if (success) {
+			if (SongCards.ContainsKey(id)) {
+				SongCards[id].IsDownloaded = true;
+			}
+		} else {
+			Debug.LogError(message);
+		}
+	}
+
+
+	public static void SetDownLoadProgress (string id, float progress) {
+		if (SongCards.ContainsKey(id) && SongCards[id] != null) {
+			SongCards[id].Progress = progress;
+		}
+	}
+
+
+	#endregion
+
 
 	#endregion
 
@@ -467,12 +791,12 @@ public class Stage : MonoBehaviour {
 
 	private IEnumerator LoadLevel (SongInitInfo info) {
 
-		LoadingLevel = true;
+		Loading = true;
 
 		StageMusic.Main.Stop();
 
-		RemoveAllNotes();
-		StageScore.Clear();
+		RemoveAllNotes(NoteState.None);
+		StageScore.Close();
 
 		HoldOn.Show();
 		HoldOn.SetProgress(0f / 2f);
@@ -489,13 +813,21 @@ public class Stage : MonoBehaviour {
 		Resources.UnloadUnusedAssets();
 
 		TheStageSetting.PlayMod = info.PlayMode;
+		TheStageSetting.SpeedScale = info.SpeedScale;
 
-		if (info.PlayAfterLoad) {
-			StageMusic.Main.Play();
-		}
+		GamePlaying = true;
 
-		LoadingLevel = false;
+		yield return new WaitForSeconds(0.5f);
+		RemoveAllNotes();
+		yield return new WaitForSeconds(0.5f);
 
+
+		// Ready -- Go --
+		
+		StageMusic.Main.Play();
+		StageMicrophone.MicrophoneStart(Mathf.CeilToInt(StageMusic.Main.Length));
+
+		Loading = false;
 		yield return null;
 	}
 
@@ -508,7 +840,10 @@ public class Stage : MonoBehaviour {
 			yield return LoadLevelFail("SongFile Path is NOT exists! " + info.SongFilePath);
 		}
 
-		// Mp3 --> Wav
+		
+		///*Mp3 --> Wav
+		//#if UNITY_STANDALONE || UNITY_EDITOR
+
 		if (Path.GetExtension(info.SongFilePath) == ".mp3") {
 			string wavPath = Path.ChangeExtension(info.SongFilePath, ".wav");
 			bool success = true;
@@ -522,9 +857,12 @@ public class Stage : MonoBehaviour {
 			}
 		}
 
+		//#endif
+		//*/
+
 		// Load
 		StageMusic.Main.Clear();
-		WWW _www = new WWW(@"file:///" + info.SongFilePath);
+		WWW _www = new WWW(FileUtility.GetFileURL(info.SongFilePath));
 		yield return _www;
 		if (_www.error == null) {
 			AudioClip _songClip = _www.GetAudioClipCompressed(false);
@@ -564,7 +902,7 @@ public class Stage : MonoBehaviour {
 		if (!success) {
 			yield return LoadLevelFail("Failed to load beatMap! " + info.BeatMapFilePath);
 		}
-		StageScore.Init(BeatMapManager.GetNoteSum());
+		StageScore.Open(BeatMapManager.GetNoteSum());
 
 		yield return null;
 	}
@@ -575,7 +913,8 @@ public class Stage : MonoBehaviour {
 		HoldOn.Hide();
 		Debug.LogError(msg);
 		StopAllCoroutines();
-		LoadingLevel = false;
+		Loading = false;
+		GamePlaying = false;
 		StageMusic.Main.Clear();
 		BeatMapManager.ClearBeatMap();
 		Resources.UnloadUnusedAssets();
@@ -593,6 +932,31 @@ public class Stage : MonoBehaviour {
 	}
 
 
+	private static void InitAimTransform () {
+		Main.CameraAimPos = TheStageSetting.DefaultCameraPos;
+		Main.CameraAimRot = TheStageSetting.DefaultCameraRot;
+		TheStageSetting.StringColors.CopyTo(Main.StringAimColors, 0);
+		Main.TrackHightLightAimColors.Initialize();
+		for (int i = 0; i < 24; i++) {
+			SetTrackHightLight(i, false);
+		}
+		for (int i = 0; i < 25; i++) {
+			SetFretWireLight(i, false);
+		}
+		
+	}
+
+
+	private static readonly string CancelLogin_FuncName = "CancelLogin";
+	private void CancelLogin () {
+		NetworkManager.CancelLoginImmediate();
+	}
+
+
+	private static readonly string CancelLogout_FuncName = "CancelLogout";
+	private void CancelLogout () {
+		NetworkManager.CancelLogoutImmediate();
+	}
 
 	#endregion
 

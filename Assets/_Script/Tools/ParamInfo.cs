@@ -7,14 +7,14 @@ public struct SongInitInfo {
 	
 	public string SongFilePath;
 	public string BeatMapFilePath;
-	public bool PlayAfterLoad;
+	public int SpeedScale;
 	public StagePlayMod PlayMode;
 
 
-	public SongInitInfo (string songPath, string beatMapPath, StagePlayMod playMode = StagePlayMod.RealGuitar, bool playAfterLoad = true) {
+	public SongInitInfo (string songPath, string beatMapPath, int speedScale, StagePlayMod playMode) {
 		SongFilePath = songPath;
 		BeatMapFilePath = beatMapPath;
-		PlayAfterLoad = playAfterLoad;
+		SpeedScale = speedScale;
 		PlayMode = playMode;
 	}
 

@@ -10,6 +10,8 @@ public class ForTest : MonoBehaviour {
 	string BeatMapPath = "";
 	int currentTestTruck = 12;
 	float currentTestAngle = 0f;
+	int speedScale = 4;
+
 
 	void Start () {
 
@@ -17,26 +19,26 @@ public class ForTest : MonoBehaviour {
 		KeyboardCamera = PlayerPrefs.GetInt("Test_KeyboardCamera", 1) == 1;
 		SongPath = PlayerPrefs.GetString("Test_SongPath", Application.dataPath + @"/Ccna — Aquarius.wav");
 		BeatMapPath = PlayerPrefs.GetString("Test_BeatMapPath", Application.dataPath + @"/Ccna — Aquarius.wav");
+		speedScale = PlayerPrefs.GetInt("Test_speedScale", 4);
 		
+
 	}
 
 
 	void Update () {
 
 
-		if (RandomNote) {
+		if (RandomNote && Stage.GamePlaying) {
 			if (StageMusic.Main.IsPlaying && Stage.Time + Stage.TheStageSetting.ShowNoteTime < StageMusic.Main.Length) {
-				Stage.AddNote(new NoteInfo(
-					Random.Range(0, 24),
-					Random.Range(0, 6),
-					Mathf.Clamp(Stage.Time + Stage.TheStageSetting.ShowNoteTime + Random.Range(0f, 0f), 0f, StageMusic.Main.Length),
-					(NoteInfo.NoteType)Random.Range(0f, 1.03f)
-				));
+				Stage.RandomAddNote(
+					Mathf.Clamp(Stage.Time + Stage.TheStageSetting.ShowNoteTime, 0f, StageMusic.Main.Length),
+					0, 24, 0, 6, 0f, 1.03f
+				);
 			}
 		}
 
 
-		if (KeyboardCamera) {
+		if (KeyboardCamera && Stage.GamePlaying) {
 
 			if (Input.GetKeyDown(KeyCode.A)) {
 				currentTestTruck = Mathf.Clamp(currentTestTruck - 1, 2, 21);
@@ -70,20 +72,29 @@ public class ForTest : MonoBehaviour {
 		GUI.Label(GUILayoutUtility.GetRect(70f, 24f), "Song");
 		SongPath = GUI.TextField(GUILayoutUtility.GetRect(170f, 30f), SongPath);
 		GUILayout.EndHorizontal();
+
 		GUILayout.BeginHorizontal();
 		GUI.Label(GUILayoutUtility.GetRect(70f, 24f), "BeatMap");
 		BeatMapPath = GUI.TextField(GUILayoutUtility.GetRect(170f, 30f), BeatMapPath);
 		GUILayout.EndHorizontal();
 
+		GUILayout.BeginHorizontal();
+		GUI.Label(GUILayoutUtility.GetRect(70f, 24f), "Speed Scale");
+		string ss = GUI.TextField(GUILayoutUtility.GetRect(170f, 30f), speedScale.ToString());
+		if (int.TryParse(ss, out speedScale)) {
+			speedScale = Mathf.Clamp(speedScale, 0, 8);
+		}
+		GUILayout.EndHorizontal();
+
 		GUILayout.Space(4f);
 
 		GUILayout.BeginHorizontal();
-		if(GUI.Button(GUILayoutUtility.GetRect(80f, 24f), "Start")){
+		if(GUI.Button(GUILayoutUtility.GetRect(80f, 20f), "Start")){
 			Stage.StartGame(new SongInitInfo(
 				SongPath,
 				BeatMapPath,
-				StagePlayMod.Auto,
-				true
+				speedScale,
+				StagePlayMod.Auto
 			));
 		}
 
@@ -99,6 +110,10 @@ public class ForTest : MonoBehaviour {
 		GUILayout.BeginHorizontal();
 		if (GUI.Button(GUILayoutUtility.GetRect(80f, 24f), "Pause / Play")) {
 			Stage.PlayPauseGame();
+		}
+		GUILayout.Space(10f);
+		if (GUI.Button(GUILayoutUtility.GetRect(80f, 24f), "SignOut")) {
+			Stage.Main.StartSignOut();
 		}
 		GUILayout.EndHorizontal();
 		GUILayout.Space(4f);
@@ -130,6 +145,7 @@ public class ForTest : MonoBehaviour {
 			PlayerPrefs.SetInt("Test_KeyboardCamera", KeyboardCamera ? 1 : 0);
 			PlayerPrefs.SetInt("Test_RandomNote", RandomNote ? 1 : 0);
 			PlayerPrefs.SetString("Test_BeatMapPath", BeatMapPath);
+			PlayerPrefs.SetInt("Test_speedScale", speedScale);
 		}
 
 		

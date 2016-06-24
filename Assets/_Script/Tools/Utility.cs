@@ -114,6 +114,9 @@ public class FileUtility {
 	}
 
 
+	public static string GetFileURL (string path) {
+		return (new System.Uri(path)).AbsoluteUri;
+	}
 
 
 }

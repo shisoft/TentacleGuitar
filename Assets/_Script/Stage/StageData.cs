@@ -3,6 +3,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using CodeStage.AntiCheat.ObscuredTypes;
 
 
 public enum StagePlayMod {
@@ -14,6 +15,31 @@ public enum StagePlayMod {
 
 [System.Serializable]
 public class StageSetting {
+
+	
+	#region --- Guitar ---
+
+
+	public SpriteRenderer GuitarBody {
+		get {
+			return guitarBody;
+		}
+	}
+
+	public SpriteRenderer GuitarHead {
+		get {
+			return guitarHead;
+		}
+	}
+
+	public Color GuitarColor {
+		get {
+			return guitarColor;
+		}
+	}
+
+
+	#endregion
 
 
 	#region --- Note ---
@@ -48,7 +74,7 @@ public class StageSetting {
 
 	public float ShowNoteTime {
 		get {
-			return showNoteTime;
+			return 12f / NoteSpeed;
 		}
 	}	  // 提前多少秒显示音符，位于临界点附近时会淡入淡出
 
@@ -100,6 +126,17 @@ public class StageSetting {
 
 	#region --- Track ---
 
+	public SpriteRenderer TrackBackSR {
+		get {
+			return trackBackSR;
+		}
+	}
+
+	public Color TrackBackColor {
+		get {
+			return trackBackColor;
+		}
+	}
 
 	public SpriteRenderer[] TrackHighLights {
 		get {
@@ -150,36 +187,87 @@ public class StageSetting {
 	#region --- Camera ---
 
 
-	public Transform MainCamera {
+	public Transform MainCameraHolder {
 		get {
-			return mainCamera;
+			return mainCameraHolder;
 		}
 	}		// 摄影机容器
 
+	public Transform MainCamera {
+		get {
+			if (!mainCamera) {
+				mainCamera = Camera.main.transform;
+			}
+			return mainCamera;
+		}
+	}		// 摄影机
+
 	public Vector3 CameraPos {
 		get {
-			return MainCamera.position;
+			return MainCameraHolder.position;
 		}
 		set {
-			MainCamera.position = value;
+			MainCameraHolder.position = value;
 			trackBack.position = new Vector3(value.x, trackBack.position.y, trackBack.position.z);
 		}
 	}	 // 摄影机的位置
 
 	public Quaternion CameraRot {
 		get {
-			return MainCamera.rotation;
+			return MainCameraHolder.rotation;
 		}
 		set {
-			MainCamera.rotation = value;
+			MainCameraHolder.rotation = value;
 		}
 	}	 // 摄影机的角度
+
+	public Vector3 DefaultCameraPos {
+		get {
+			return new Vector3(4.6f, 0f, 0f);
+		}
+	}
+
+	public Quaternion DefaultCameraRot {
+		get {
+			return Quaternion.identity;
+		}
+	}
+
+	public Vector3 CameraPlayingPos {
+		get {
+			return cameraPlayingPos;
+		}
+	}
+
+	public Vector3 CameraMenuPos {
+		get {
+			return cameraMenuPos;
+		}
+	}
+
+	public Quaternion CameraPlayingRot {
+		get {
+			return Quaternion.Euler(cameraPlayingRot);
+		}
+	}
+
+	public Quaternion CameraMenuRot {
+		get {
+			return Quaternion.Euler(cameraMenuRot);
+		}
+	}
 
 
 	#endregion
 
 
-	#region --- Game Setting ---
+	#region --- Game ---
+
+	public AudioSource TitleBGM {
+		get {
+			return titleBGM;
+		}
+	}
 
 	public float MusicLoadingMaxTime {
 		get {
@@ -208,7 +296,65 @@ public class StageSetting {
 		}
 	}	// 游戏模式，自动演示 / 鼠标 / 乐器 / 无
 
+	public string SignupURL {
+		get {
+			return signupURL;
+		}
+	}
+
+
 	#endregion
+
+
+	#region --- UI ---
+
+
+	public Animator MenuAni {
+		get {
+			return menuAni;
+		}
+	}
+
+	public Animator MainBtnAni {
+		get {
+			return mainBtnAni;
+		}
+	}
+
+	public ObscuredString UserName {
+		get {
+			return userNameField.text;
+		}
+		set {
+			userNameField.text = value;
+		}
+	}
+
+	public ObscuredString Password {
+		get {
+			return passwordField.text;
+		}
+	}
+
+	public bool LoginUIInteractable {
+		set {
+			for (int i = 0; i < loginUIStuff.Length; i++) {
+				loginUIStuff[i].interactable = value;
+			}
+		}
+	}
+
+
+	#endregion
+
+
+	// Guitar
+	[SerializeField]
+	private SpriteRenderer guitarBody;
+	[SerializeField]
+	private SpriteRenderer guitarHead;
+	[SerializeField]
+	private Color guitarColor;
 
 
 	// Note
@@ -223,9 +369,8 @@ public class StageSetting {
 	[SerializeField]
 	private float startMoveDistance = 4f;
 	[SerializeField]
-	private float showNoteTime = 3f;
-	[SerializeField]
 	private Color[] noteColors;	
+
 
 	// String
 	[Space(20f)]
@@ -246,6 +391,10 @@ public class StageSetting {
 	[SerializeField]
 	private Transform trackBack;
 	[SerializeField]
+	private Color trackBackColor;
+	[SerializeField]
+	private SpriteRenderer trackBackSR;
+	[SerializeField]
 	private Vector3 tracksPivot;
 	[SerializeField]
 	private Vector2 tracksGap;
@@ -262,6 +411,7 @@ public class StageSetting {
 
 
 	// Fret
+	[Space(20f)]
 	[SerializeField]
 	private Color fretWireLightNormalColor;
 	[SerializeField]
@@ -273,11 +423,22 @@ public class StageSetting {
 	// Camera
 	[Space(20f)]
 	[SerializeField]
+	private Transform mainCameraHolder;
 	private Transform mainCamera;
-	
+	[SerializeField]
+	private Vector3 cameraPlayingPos;
+	[SerializeField]
+	private Vector3 cameraMenuPos;
+	[SerializeField]
+	private Vector3 cameraPlayingRot;
+	[SerializeField]
+	private Vector3 cameraMenuRot;
 
-	// GameSetting
+
+	// Game
 	[Space(20f)]
+	[SerializeField]
+	private AudioSource titleBGM;
 	[SerializeField]
 	private float musicLoadingMaxTime = 20f;
 	[SerializeField]
@@ -286,9 +447,22 @@ public class StageSetting {
 	private float perfectTime;
 	[SerializeField]
 	private StagePlayMod playMod = StagePlayMod.RealGuitar;
-	
+	[SerializeField]
+	private string signupURL = "";
 
 
+	// UI
+	[Space(20f)]
+	[SerializeField]
+	private Animator menuAni;
+	[SerializeField]
+	private Animator mainBtnAni;
+	[SerializeField]
+	private InputField userNameField;
+	[SerializeField]
+	private InputField passwordField;
+	[SerializeField]
+	private Selectable[] loginUIStuff;
 
 	
 	public Vector3 TrackPos (int trackID = 0, int stringID = 0) {

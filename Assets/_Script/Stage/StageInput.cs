@@ -13,45 +13,19 @@ public class StageInput : MonoBehaviour {
 
 
 	private static bool[,] trackHolding = new bool[24, 6];
-	private int LayerID;
 
 
 
 	void Awake () {
 		TrackHolding.Initialize();
-		LayerID = LayerMask.GetMask("Input");
 	}
 
-
-	
-	void Update () {
-
-		if (Stage.TheStageSetting.PlayMod == StagePlayMod.MouseAndKeyboard) {
-
-			if (Input.GetMouseButtonDown(0)) {
-				RaycastHit hit;
-				if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, LayerID)) {
-					Vector2 ID_String = Stage.TheStageSetting.TrackID(hit.point);
-					Stage.ShackString((int)ID_String.y, 0.02f);
-					Stage.Beat((int)ID_String.x, (int)ID_String.y);
-				}
-			}
-
-			if (Input.GetMouseButton(0)) {
-				
-
-
-			}
-
-		}
-
-	}
 
 
 	void LateUpdate () {
 		
 		
-		// 做出响应
+		// Hold做出响应
 
 
 

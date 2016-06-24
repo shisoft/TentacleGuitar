@@ -6,12 +6,6 @@ using System.Collections;
 using CodeStage.AntiCheat.ObscuredTypes;
 
 
-public enum StagePlayMod {
-	Auto = 0,
-	MouseAndKeyboard = 1,
-	RealGuitar = 2,
-}
-	
 
 [System.Serializable]
 public class StageSetting {
@@ -57,6 +51,8 @@ public class StageSetting {
 		}
 		set {
 			speedScale = Mathf.Clamp(value, 1, 8);
+			speedScaleTXT.text = "Speed x " + speedScale.ToString();
+			PlayerPrefs.SetInt("SpeedScale", speedScale);
 		}
 	}	  // 音符下落速度，由玩家按个人喜好自定义
 
@@ -287,14 +283,14 @@ public class StageSetting {
 		}
 	}	 //音符在前后多少秒内被击打为Perfect 请确保 0 < perfectTime < missTime
 
-	public StagePlayMod PlayMod {
+	public bool AutoPlay {
 		get {
-			return playMod;
+			return autoPlay;
 		}
 		set {
-			playMod = value;
+			autoPlay = value;
 		}
-	}	// 游戏模式，自动演示 / 鼠标 / 乐器 / 无
+	}	// 是否自动演示
 
 	public string SignupURL {
 		get {
@@ -308,6 +304,17 @@ public class StageSetting {
 
 	#region --- UI ---
 
+	public bool AutoPlayIsOn {
+		get {
+			return autoPlayTG.isOn;
+		}
+	}
+
+	public int ScoreTXT {
+		set {
+			scoreTXT.text = value.ToString("0000000");
+		}
+	}
 
 	public Animator MenuAni {
 		get {
@@ -446,13 +453,19 @@ public class StageSetting {
 	[SerializeField]
 	private float perfectTime;
 	[SerializeField]
-	private StagePlayMod playMod = StagePlayMod.RealGuitar;
+	private bool autoPlay = false;
 	[SerializeField]
 	private string signupURL = "";
 
 
 	// UI
 	[Space(20f)]
+	[SerializeField]
+	private Toggle autoPlayTG;
+	[SerializeField]
+	private Text speedScaleTXT;
+	[SerializeField]
+	private Text scoreTXT;
 	[SerializeField]
 	private Animator menuAni;
 	[SerializeField]

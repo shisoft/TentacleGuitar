@@ -261,38 +261,31 @@ public class Note : MonoBehaviour {
 			return;
 		}
 		NoteState prevState = State;
-		switch (Stage.TheStageSetting.PlayMod) {
-			default:
-			case StagePlayMod.Auto:
-				BeatOffset = 0f;
-				State = Stage.Time > this.Time ? NoteState.Perfect : NoteState.None;
-				if (prevState != State) {
-					StageScore.AddScore(State);
-				}
-				break;
-			case StagePlayMod.MouseAndKeyboard:
-			case StagePlayMod.RealGuitar:
-				if (Stage.Time - Time > Stage.TheStageSetting.MissTime) {
-					BeatOffset = Stage.TheStageSetting.MissTime;
-					State = NoteState.Miss;
-					if (prevState != State) {
-						StageScore.AddScore(State);
-					}
-					break;
-				}
-				if (BeatOffset < -Stage.TheStageSetting.MissTime) {
-					State = NoteState.None;
-				} else if (BeatOffset < -Stage.TheStageSetting.PerfectTime) {
-					State = NoteState.Good;
-				} else if (BeatOffset < Stage.TheStageSetting.PerfectTime) {
-					State = NoteState.Perfect;
-				} else if (BeatOffset < Stage.TheStageSetting.MissTime) {
-					State = NoteState.Good;
-				} else {
-					State = NoteState.Miss;
-				}
-				break;
+		if (Stage.TheStageSetting.AutoPlay) {
+			BeatOffset = 0f;
+			State = Stage.Time > this.Time ? NoteState.Perfect : NoteState.None;
+			if (prevState != State) {
+				StageScore.AddScore(State);
+			}
+		}else if (Stage.Time - Time > Stage.TheStageSetting.MissTime) {
+			BeatOffset = Stage.TheStageSetting.MissTime;
+			State = NoteState.Miss;
+			if (prevState != State) {
+				StageScore.AddScore(State);
+			}
+		} else if (BeatOffset < -Stage.TheStageSetting.MissTime) {
+			State = NoteState.None;
+		} else if (BeatOffset < -Stage.TheStageSetting.PerfectTime) {
+			State = NoteState.Good;
+		} else if (BeatOffset < Stage.TheStageSetting.PerfectTime) {
+			State = NoteState.Perfect;
+		} else if (BeatOffset < Stage.TheStageSetting.MissTime) {
+			State = NoteState.Good;
+		} else {
+			State = NoteState.Miss;
 		}
+				
+		
 
 		if (prevState != State) {
 			Ani.SetTrigger(State.ToString());

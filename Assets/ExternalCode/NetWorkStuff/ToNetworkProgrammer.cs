@@ -209,13 +209,19 @@ public class NetworkManager {
 	/// </summary>
 	public static IEnumerator TryDownloadSong (string id) {
 
+		Stage.SetDownLoadProgress(id, 0.05f);
+
+		// Tip: 刚开始时就把进度设置成 0.05，让用户知道这首歌已经开始下载了。
+
+
 
 		// --------- Your Code Here --------
 
+		
 
 		//<Test> 完成逻辑后删除Test代码
-		for (int i = 0; i < 100; i++) {
-			Stage.SetDownLoadProgress(id, (float)i / 100f);
+		for (int i = 5; i < 100; i++) {
+			Stage.SetDownLoadProgress(id,(float)i / 100f);
 			yield return new WaitForSeconds(0.01f);
 		}
 		Stage.DownLoadDone(true, id);

@@ -28,7 +28,7 @@ public class BeatMapManager {
 	/// </param>
 	/// 
 	/// <returns> 是否成功载入谱面 </returns>
-	public static bool LoadBeatMap (SongInitInfo info) {
+	public static bool LoadBeatMap (string path) {
 
 
 		// ----- Your Code Here -----

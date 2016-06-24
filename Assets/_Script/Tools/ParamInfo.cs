@@ -3,25 +3,6 @@ using UnityEngine;
 using System.Collections;
 
 
-public struct SongInitInfo {
-	
-	public string SongFilePath;
-	public string BeatMapFilePath;
-	public int SpeedScale;
-	public StagePlayMod PlayMode;
-
-
-	public SongInitInfo (string songPath, string beatMapPath, int speedScale, StagePlayMod playMode) {
-		SongFilePath = songPath;
-		BeatMapFilePath = beatMapPath;
-		SpeedScale = speedScale;
-		PlayMode = playMode;
-	}
-
-
-	
-}
-
 
 
 public struct NoteInfo {

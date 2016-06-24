@@ -90,12 +90,7 @@ public class ForTest : MonoBehaviour {
 
 		GUILayout.BeginHorizontal();
 		if(GUI.Button(GUILayoutUtility.GetRect(80f, 20f), "Start")){
-			Stage.StartGame(new SongInitInfo(
-				SongPath,
-				BeatMapPath,
-				speedScale,
-				StagePlayMod.Auto
-			));
+			Stage.StartGame(SongPath, BeatMapPath);
 		}
 
 		GUILayout.Space(10f);

@@ -31,7 +31,7 @@ public class SongCard : MonoBehaviour {
 		}
 		set {
 			level = value;
-			levelText.text = value.ToString("00");
+			levelText.text = "Lv "+value.ToString("00");
 			levelText.color = levelColor[Mathf.Clamp(value - 1, 0, levelColor.Length)];
 		}
 	}
@@ -60,7 +60,7 @@ public class SongCard : MonoBehaviour {
 			return progressBar.fillAmount;
 		}
 		set {
-			progressBar.fillAmount = value;
+			progressBar.fillAmount = Mathf.Clamp01(value);
 		}
 	}
 

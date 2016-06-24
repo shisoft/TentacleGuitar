@@ -58,7 +58,19 @@ public class Stage : MonoBehaviour {
 	public static bool Loading = false;
 	public static bool GamePlaying = false;
 	public static bool IsSignedIn = false;
-	public static Dictionary<string, SongCard> SongCards = new Dictionary<string,SongCard>();
+	public static Dictionary<string, SongCard> SongCards = new Dictionary<string, SongCard>();
+	public static bool NoSongIsDownLoading {
+		get {
+			bool flag = true;
+			foreach (KeyValuePair<string, SongCard> sc in SongCards) {
+				if (sc.Value && sc.Value.IsDownloading) {
+					flag = false;
+					break;
+				}
+			}
+			return flag;
+		}
+	}
 
 	// Lerp Animation 
 	private Vector3[] StringAimPos = new Vector3[6];
@@ -73,7 +85,7 @@ public class Stage : MonoBehaviour {
 	private float StringColorRant = 0.1f;
 	private float TrackHightLightColorRant = 0.4f;
 	private float FretWireLightColorRant = 0.1f;
-
+	private int ShowingScore = 0;
 
 	#endregion
 
@@ -84,11 +96,12 @@ public class Stage : MonoBehaviour {
 	void Awake () {
 		Main = this;
 		TheStageSetting.UserName = ObscuredPrefs.GetString("UserName", "");
+		TheStageSetting.SpeedScale = PlayerPrefs.GetInt("SpeedScale", 4);
 		InitAimTransform();
 		for (int i = 0; i < 6; i++) {
 			Main.StringAimPos[i] = TheStageSetting.StringTFs[i].position;
 		}
-		TheStageSetting.PlayMod = StagePlayMod.Auto;
+		TheStageSetting.AutoPlay = true;
 		StageScore.Close();
 		StageMusic.StopToEndCallback += this.CleanNoteOnEnd;
 		BeatMapManager.StageAwake();
@@ -139,6 +152,14 @@ public class Stage : MonoBehaviour {
 		}
 		
 		// Aim Movement
+		ShowingScore = StageScore.CurrentScore >= StageScore.FullScore ?
+			(int)StageScore.FullScore :
+			(int)Mathf.Lerp(
+				ShowingScore,
+				(GamePlaying ? StageScore.CurrentScore : 0),
+				0.9f
+			);
+		TheStageSetting.ScoreTXT = ShowingScore;
 		
 		TheStageSetting.TitleBGM.volume = Mathf.Lerp(
 			TheStageSetting.TitleBGM.volume, 
@@ -263,15 +284,20 @@ public class Stage : MonoBehaviour {
 	}
 
 
+	public void SetSpeedScale () {
+		TheStageSetting.SpeedScale = TheStageSetting.SpeedScale >= 8 ? 1 : TheStageSetting.SpeedScale + 1;
+	}
+
+
 	public static void TryStartSong (string id) {
-		if (!Main || Loading) { return; }
+		if (!Main || Loading) { 
+			return; 
+		}
 		if (NetworkManager.SongIsDownLoaded(id)) {
-			StartGame(new SongInitInfo(
+			StartGame(
 				NetworkManager.GetSongLocalPath(id),
-				NetworkManager.GetBeatMapLocalPath(id),
-				4,
-				StagePlayMod.RealGuitar
-			));
+				NetworkManager.GetBeatMapLocalPath(id)
+			);
 		} else if (Main) {
 			if (SongCards.ContainsKey(id) && SongCards[id] && !SongCards[id].IsDownloading) {
 				SongCards[id].IsDownloading = true;
@@ -281,7 +307,7 @@ public class Stage : MonoBehaviour {
 	}
 
 
-
+	
 
 	
 
@@ -295,15 +321,19 @@ public class Stage : MonoBehaviour {
 	#region --- Game ---
 
 
-	public static void StartGame (SongInitInfo info) {
+	public static void StartGame (string songPath, string beatMapPath) {
 		// Start Load
 		if (!Loading && Main) {
-			if (NetworkManager.IsLogedIn) {
-				InitAimTransform();
-				Main.StopAllCoroutines();
-				Main.StartCoroutine(Main.LoadLevel(info));
+			if (NoSongIsDownLoading) {
+				if (NetworkManager.IsLogedIn) {
+					InitAimTransform();
+					Main.StopAllCoroutines();
+					Main.StartCoroutine(Main.LoadLevel(songPath, beatMapPath));
+				} else {
+					Debug.LogWarning("Can not start a level now! No user is signed in.");
+				}
 			} else {
-				Debug.LogWarning("Can not start a level now! No user is signed in.");
+				Debug.LogWarning("Can not start a level now! Song(s) is loading...");
 			}
 		} else {
 			Debug.LogWarning("Can not start a level now! Another level is loading...");
@@ -323,7 +353,7 @@ public class Stage : MonoBehaviour {
 		TheStageSetting.TitleBGM.UnPause();
 		InitAimTransform();
 		RemoveAllNotes();
-		TheStageSetting.PlayMod = StagePlayMod.Auto;
+		TheStageSetting.AutoPlay = true;
 		StageScore.Close();
 	}
 
@@ -692,10 +722,6 @@ public class Stage : MonoBehaviour {
 		if (success) {
 			IsSignedIn = true;
 			Main.StartCoroutine(NetworkManager.TryLoadSongListInfo());
-			Debug.Log("Login Success. name = " + TheStageSetting.UserName);
-
-
-
 			ObscuredPrefs.SetString("UserName", TheStageSetting.UserName);
 			ObscuredPrefs.SetString("LoginToken", NetworkManager.LoginToken);
 		} else {
@@ -789,7 +815,7 @@ public class Stage : MonoBehaviour {
 	#region -------- Logic --------
 
 
-	private IEnumerator LoadLevel (SongInitInfo info) {
+	private IEnumerator LoadLevel (string songPath, string beatMapPath) {
 
 		Loading = true;
 
@@ -802,18 +828,17 @@ public class Stage : MonoBehaviour {
 		HoldOn.SetProgress(0f / 2f);
 
 		// Load Music
-		yield return LoadSong(info);
+		yield return LoadSong(songPath);
 		HoldOn.SetProgress(1f / 2f);
 
 		// Load Beat Map
-		yield return LoadBeatMap(info);
+		yield return LoadBeatMap(beatMapPath);
 		HoldOn.SetProgress(2f / 2f);
 
 		HoldOn.Hide();
 		Resources.UnloadUnusedAssets();
 
-		TheStageSetting.PlayMod = info.PlayMode;
-		TheStageSetting.SpeedScale = info.SpeedScale;
+		TheStageSetting.AutoPlay = TheStageSetting.AutoPlayIsOn;
 
 		GamePlaying = true;
 
@@ -833,27 +858,27 @@ public class Stage : MonoBehaviour {
 
 
 
-	private IEnumerator LoadSong (SongInitInfo info) {
+	private IEnumerator LoadSong (string path) {
 
 		// Check
-		if (!File.Exists(info.SongFilePath)) {
-			yield return LoadLevelFail("SongFile Path is NOT exists! " + info.SongFilePath);
+		if (!File.Exists(path)) {
+			yield return LoadLevelFail("SongFile Path is NOT exists! " + path);
 		}
 
 		
 		///*Mp3 --> Wav
 		//#if UNITY_STANDALONE || UNITY_EDITOR
 
-		if (Path.GetExtension(info.SongFilePath) == ".mp3") {
-			string wavPath = Path.ChangeExtension(info.SongFilePath, ".wav");
+		if (Path.GetExtension(path) == ".mp3") {
+			string wavPath = Path.ChangeExtension(path, ".wav");
 			bool success = true;
 			if (!File.Exists(wavPath)) {
-				success = AudioConverter.MP3toWAV(info.SongFilePath);
+				success = AudioConverter.MP3toWAV(path);
 			}
 			if (success) {
-				info.SongFilePath = Path.ChangeExtension(info.SongFilePath, ".wav");
+				path = Path.ChangeExtension(path, ".wav");
 			} else {
-				yield return LoadLevelFail("Failed to Convert .wav file from: " + info.SongFilePath);
+				yield return LoadLevelFail("Failed to Convert .wav file from: " + path);
 			}
 		}
 
@@ -862,11 +887,11 @@ public class Stage : MonoBehaviour {
 
 		// Load
 		StageMusic.Main.Clear();
-		WWW _www = new WWW(FileUtility.GetFileURL(info.SongFilePath));
+		WWW _www = new WWW(FileUtility.GetFileURL(path));
 		yield return _www;
 		if (_www.error == null) {
 			AudioClip _songClip = _www.GetAudioClipCompressed(false);
-			_songClip.name = Path.GetFileNameWithoutExtension(info.SongFilePath);
+			_songClip.name = Path.GetFileNameWithoutExtension(path);
 			// Wait Song Load
 			StageMusic.Main.Clip = _songClip;
 			float waitTime = stageSetting.MusicLoadingMaxTime;
@@ -877,11 +902,11 @@ public class Stage : MonoBehaviour {
 			_www.Dispose();
 			if (waitTime <= 0f) {
 				StageMusic.Main.Clip = null;
-				yield return LoadLevelFail("SongFile loading out of time! " + info.SongFilePath);
+				yield return LoadLevelFail("SongFile loading out of time! " + path);
 			}
 		} else {
 			_www.Dispose();
-			yield return LoadLevelFail("SongFile can NOT be load! " + info.SongFilePath);
+			yield return LoadLevelFail("SongFile can NOT be load! " + path);
 		}
 		
 
@@ -890,17 +915,17 @@ public class Stage : MonoBehaviour {
 
 
 
-	private IEnumerator LoadBeatMap (SongInitInfo info) {
+	private IEnumerator LoadBeatMap (string path) {
 		// Check
-		if (!File.Exists(info.BeatMapFilePath)) {
-			yield return LoadLevelFail("BeatMapFile Path is NOT exists! " + info.BeatMapFilePath);
+		if (!File.Exists(path)) {
+			yield return LoadLevelFail("BeatMapFile Path is NOT exists! " + path);
 		}
 
 		// Load
 		BeatMapManager.ClearBeatMap();
-		bool success = BeatMapManager.LoadBeatMap(info);
+		bool success = BeatMapManager.LoadBeatMap(path);
 		if (!success) {
-			yield return LoadLevelFail("Failed to load beatMap! " + info.BeatMapFilePath);
+			yield return LoadLevelFail("Failed to load beatMap! " + path);
 		}
 		StageScore.Open(BeatMapManager.GetNoteSum());
 

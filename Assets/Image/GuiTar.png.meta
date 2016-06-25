@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 01672239708ceeb4ebe933bcc65002e4
-timeCreated: 1466746523
+timeCreated: 1466897356
 licenseType: Pro
 TextureImporter:
   fileIDToRecycleName:
@@ -25,6 +25,9 @@ TextureImporter:
     21300036: TitleBack
     21300038: DownLoadIcon
     21300040: WhitePaper
+    21300042: JudgePerfect
+    21300044: JudgeGood
+    21300046: JudgeMiss
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -398,6 +401,39 @@ TextureImporter:
         y: 472
         width: 4
         height: 4
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: JudgePerfect
+      rect:
+        serializedVersion: 2
+        x: 363
+        y: 386
+        width: 139
+        height: 25
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: JudgeGood
+      rect:
+        serializedVersion: 2
+        x: 363
+        y: 353
+        width: 87
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: JudgeMiss
+      rect:
+        serializedVersion: 2
+        x: 364
+        y: 320
+        width: 79
+        height: 25
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

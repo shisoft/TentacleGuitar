@@ -101,6 +101,7 @@ namespace Assets.ExternalCode.WebApi
                 var stream = response.GetResponseStream();
                 var tmpstream = new MemoryStream();
                 stream.CopyTo(tmpstream);
+                tmpstream.Position = 0;
                 var br = new BinaryReader(tmpstream);
                 ret = br.ReadBytes(Convert.ToInt32(tmpstream.Length));
                 br.Close();

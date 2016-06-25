@@ -114,7 +114,13 @@ public class Stage : MonoBehaviour {
 	void Start () {
 		ObscuredString token = ObscuredPrefs.GetString("LoginToken", "");
 		if (!string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(TheStageSetting.UserName)) {
-			StartLogin(false);
+			int year = ObscuredPrefs.GetInt("TokenYear", 0);
+			int day = ObscuredPrefs.GetInt("TokenDay", 0);
+			int time = (System.DateTime.Now.Year - year) * 365 + System.DateTime.Now.Day - day;
+			if (time < 15) {
+				IsSignedIn = true;
+				StartCoroutine(NetworkManager.TryLoadSongListInfo());
+			}
 		}
 	}
 
@@ -122,7 +128,7 @@ public class Stage : MonoBehaviour {
 	void Update () {
 
 
-		/*
+		///*
 		if (GamePlaying && StageMicrophone.IsReady) {
 			float[] f = StageMicrophone.GetData(StageMicrophone.SamplePosition() - 44100, 44100);
 			for (int i = 0; i < f.Length - 1; i++) {
@@ -252,23 +258,15 @@ public class Stage : MonoBehaviour {
 	#region -------- UI ---------
 
 
-	public void StartLogin (bool useRealPassword = true) {
+	public void StartLogin () {
 		if (!Loading && Main && !GamePlaying) {
 			Main.StopAllCoroutines();
 			Loading = true;
 			TheStageSetting.LoginUIInteractable = false;
-			ObscuredString token = "";
-			if (!useRealPassword) {
-				token = ObscuredPrefs.GetString("LoginToken", "");
-			}
-			Main.StartCoroutine(
-				NetworkManager.TryLogin(
-					TheStageSetting.UserName,
-					useRealPassword ? TheStageSetting.Password : token,
-					useRealPassword
-				)
-			);
-			Invoke(CancelLogin_FuncName, NetworkManager.LoginLimitTime);
+			StartCoroutine(NetworkManager.TryLogin(
+				TheStageSetting.UserName,
+				TheStageSetting.Password
+			));
 		} else {
 			Debug.LogWarning("Loading Now. Can not start login.");
 		}
@@ -285,10 +283,8 @@ public class Stage : MonoBehaviour {
 	public void StartSignOut () {
 		if (!Loading && Main && !GamePlaying) {
 			Main.StopAllCoroutines();
-			Loading = true;
-			TheStageSetting.LoginUIInteractable = false;
-			Main.StartCoroutine(NetworkManager.TryLogout());
-			Invoke(CancelLogout_FuncName, NetworkManager.LoginLimitTime);
+			TheStageSetting.LoginUIInteractable = true;
+			IsSignedIn = false;
 		} else {
 			Debug.LogWarning("Loading Now. Can not start logout.");
 		}
@@ -728,41 +724,22 @@ public class Stage : MonoBehaviour {
 
 	public static void LoginDone (bool success, bool cleanPassword = false, string message = "") {
 		Loading = false;
-		if (Main) {
-			Main.CancelInvoke(CancelLogin_FuncName);
-		}
 		if (success) {
 			IsSignedIn = true;
-			Main.StartCoroutine(NetworkManager.TryLoadSongListInfo());
 			ObscuredPrefs.SetString("UserName", TheStageSetting.UserName);
-			ObscuredPrefs.SetString("LoginToken", NetworkManager.LoginToken);
+			ObscuredPrefs.SetInt("TokenYear", System.DateTime.Now.Year);
+			ObscuredPrefs.SetInt("TokenDay", System.DateTime.Now.DayOfYear);
+			Main.StartCoroutine(NetworkManager.TryLoadSongListInfo());
 		} else {
 			Debug.LogError(message);
-			if (Main) {
-				Main.StopAllCoroutines();
-			}
-		}
-	}
-
-
-	public static void LogoutDone (bool success, bool forgotPassword = false, string message = "") {
-		Loading = false;
-		if (Main) {
-			Main.CancelInvoke(CancelLogout_FuncName);
-		}
-		if (success) {
-			IsSignedIn = false;
 			TheStageSetting.LoginUIInteractable = true;
-
-
-		} else {
-			Debug.LogError(message);
 			if (Main) {
 				Main.StopAllCoroutines();
 			}
-
 		}
 	}
+
+
 
 
 	public static void LoadSongListDone (bool success, string message = "") {
@@ -770,20 +747,19 @@ public class Stage : MonoBehaviour {
 		SongCardPool.DespawnAllToDefault();
 		SongCards.Clear();
 		if (success) {
-			NetworkManager.SongInfo[] infos = NetworkManager.SongList;
-			for (int i = 0; i < infos.Length; i++) {
+			List<Assets.ExternalCode.Models.Music> infos = NetworkManager.SongList;
+			for (int i = 0; i < infos.Count; i++) {
 				Transform tf = SongCardPool.SpawnToDefault("SongCard");
 				tf.localScale = Vector3.one;
 				SongCard sc = tf.GetComponent<SongCard>();
 				if (sc) {
 					sc.Init(
-						infos[i].ID,
+						infos[i].Id.ToString(),
 						infos[i].Title,
 						infos[i].Level,
-						NetworkManager.SongIsDownLoaded(infos[i].ID)
+						NetworkManager.SongIsDownLoaded(infos[i].Id.ToString())
 					);
-					SongCards.Add(infos[i].ID, sc);
-
+					SongCards.Add(infos[i].Id.ToString(), sc);
 				}
 			}
 		} else {
@@ -996,16 +972,6 @@ public class Stage : MonoBehaviour {
 	}
 
 
-	private static readonly string CancelLogin_FuncName = "CancelLogin";
-	private void CancelLogin () {
-		NetworkManager.CancelLoginImmediate();
-	}
-
-
-	private static readonly string CancelLogout_FuncName = "CancelLogout";
-	private void CancelLogout () {
-		NetworkManager.CancelLogoutImmediate();
-	}
 
 	#endregion
 

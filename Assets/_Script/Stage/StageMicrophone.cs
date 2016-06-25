@@ -72,7 +72,7 @@ public class StageMicrophone : MonoBehaviour {
 		return Microphone.GetPosition(null);
 	}
 
-
+	
 	public static float[] GetData (int samplePosition, int sampleLength) {
 		if (!Main || !IsReady) {
 			return null;

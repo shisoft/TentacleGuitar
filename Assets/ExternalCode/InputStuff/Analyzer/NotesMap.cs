@@ -7,7 +7,7 @@ namespace AssemblyCSharp
 	{
 		public static List<double> freqs = new List<double>();
 		public static List<string> notes = new List<string>();
-
+	
 		private static void Add(string note, double freq){
 			freqs.Add (freq);
 			notes.Add (note);

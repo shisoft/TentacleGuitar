@@ -52,6 +52,7 @@ public class Stage : MonoBehaviour {
 		}
 	}
 	public static string CurrentSongID = "";
+	public static float CurrentSongOffset = 0f;
 
 	// Data Stuff
 	[SerializeField]
@@ -310,11 +311,12 @@ public class Stage : MonoBehaviour {
 			return; 
 		}
 		if (NetworkManager.SongIsDownLoaded(id)) {
+			CurrentSongID = id;
+			CurrentSongOffset = SongCards[id].Offset;
 			StartGame(
 				NetworkManager.GetSongLocalPath(id),
 				NetworkManager.GetBeatMapLocalPath(id)
 			);
-			CurrentSongID = id;
 		} else if (Main) {
 			if (SongCards.ContainsKey(id) && SongCards[id] && !SongCards[id].IsDownloading) {
 				SongCards[id].IsDownloading = true;
@@ -324,8 +326,10 @@ public class Stage : MonoBehaviour {
 	}
 
 
-	
 
+	public void TryStopGame () {
+		StopGame();
+	}
 	
 
 
@@ -364,10 +368,19 @@ public class Stage : MonoBehaviour {
 		BeatMapManager.ClearBeatMap();
 		GamePlaying = false;
 		TheStageSetting.TitleBGM.UnPause();
+		TheStageSetting.AutoPlayTagOn = TheStageSetting.AutoPlay;
+		TheStageSetting.ResultScore = 0;
+		TheStageSetting.ResultPerfect = StageScore.PerfectNum;
+		TheStageSetting.ResultGood = StageScore.GoodNum;
+		TheStageSetting.ResultMiss = StageScore.MissNum;
+		TheStageSetting.ResultMaxCombo = StageScore.MaxCombo;
 		InitAimTransform();
 		RemoveAllNotes();
 		TheStageSetting.AutoPlay = true;
 		StageScore.Close();
+
+		
+
 	}
 
 
@@ -793,7 +806,8 @@ public class Stage : MonoBehaviour {
 						infos[i].Id.ToString(),
 						infos[i].Title,
 						infos[i].Level,
-						NetworkManager.SongIsDownLoaded(infos[i].Id.ToString())
+						NetworkManager.SongIsDownLoaded(infos[i].Id.ToString()),
+						(float)infos[i].Offset / 1000f
 					);
 					SongCards.Add(infos[i].Id.ToString(), sc);
 				}
@@ -890,7 +904,7 @@ public class Stage : MonoBehaviour {
 		}
 
 		
-		///*Mp3 --> Wav
+		/*Mp3 --> Wav
 		//#if UNITY_STANDALONE || UNITY_EDITOR
 
 		if (Path.GetExtension(path) == ".mp3") {
@@ -980,7 +994,7 @@ public class Stage : MonoBehaviour {
 		RemoveAllNotes();
 		TheStageSetting.TitleBGM.UnPause();
 		TheStageSetting.AutoPlayTagOn = TheStageSetting.AutoPlay;
-		if (TheStageSetting.AutoPlay) {
+		if (!TheStageSetting.AutoPlay) {
 			NetworkManager.TryUploadResult(CurrentSongID, (int)StageScore.CurrentScore, StageScore.MaxCombo);
 		}
 		TheStageSetting.AutoPlay = true;
@@ -990,6 +1004,8 @@ public class Stage : MonoBehaviour {
 		TheStageSetting.ResultMiss = StageScore.MissNum;
 		TheStageSetting.ResultMaxCombo = StageScore.MaxCombo;
 		GamePlaying = false;
+		InitAimTransform();
+		RemoveAllNotes();
 	}
 
 

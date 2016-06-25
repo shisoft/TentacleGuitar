@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using Assets.ExternalCode.Models;
+using Newtonsoft.Json;
 using TentacleGuitar.Tabular;
 
 namespace Assets.ExternalCode.WebApi
@@ -18,7 +19,7 @@ namespace Assets.ExternalCode.WebApi
         {
             var args = new Dictionary<string, string>();
             var ret = HttpHelper.Post("http://tentacleguitar.azurewebsites.net/GetMusics", args);
-            return JsonUtility.FromJson<List<Music>>(ret);
+            return JsonConvert.DeserializeObject<List<Music>>(ret);
         }
 
         /// <summary>
@@ -58,7 +59,7 @@ namespace Assets.ExternalCode.WebApi
             var args = new Dictionary<string, string>();
             args.Add("Id", MusicId.ToString());
             var ret = HttpHelper.Post("http://tentacleguitar.azurewebsites.net/GetTabular", args);
-            return JsonUtility.FromJson<Tabular>(ret);
+            return JsonConvert.DeserializeObject<Tabular>(ret);
         }
     }
 }

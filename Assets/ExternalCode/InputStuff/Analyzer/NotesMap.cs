@@ -5,7 +5,7 @@ namespace AssemblyCSharp
 {
 	public class NotesMap
 	{
-		public static Dictionary<String, float> noteFreq = new Dictionary<string, float> ();
+		public static Dictionary<String, double> noteFreq = new Dictionary<string, double> ();
 
 		public void init(){
 			noteFreq.Add("E2",82.4);

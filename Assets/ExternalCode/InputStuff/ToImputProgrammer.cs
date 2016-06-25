@@ -94,7 +94,7 @@ public class InputManager {
 			foreach (InNote note in noteList) {
 				strNoteList.Add (NotesMap.notes[note.Id]);
 			}
-			Debug.Log (string.Join(" ", strNoteList.ToArray()));
+			//Debug.Log (string.Join(" ", strNoteList.ToArray()));
 		}
 	}
 

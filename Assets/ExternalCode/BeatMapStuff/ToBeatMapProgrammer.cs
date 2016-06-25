@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using TentacleGuitarUnity;
 
 /// <summary>
@@ -17,6 +18,21 @@ public class BeatMapManager {
 	
 	#region -------- Logic Message --------
 
+	public static int CurrentNoteNum = 0;
+	public static int CurrentLoadedIndex = 0;
+	public static float CurrentShowNoteTime = 0;
+	public static List<NoteInfo> Notes = null;
+
+
+
+	public class NoteListSorter : IComparer<NoteInfo> {
+
+		public int Compare (NoteInfo x, NoteInfo y) {
+			return x.Time.CompareTo(y.Time);
+		}
+
+	}
+
 
 	/// <summary>
 	/// 载入一张谱面，主线程
@@ -30,14 +46,36 @@ public class BeatMapManager {
 	/// <returns> 是否成功载入谱面 </returns>
 	public static bool LoadBeatMap (string path) {
 
+		string data = FileUtility.ReadText(path);
 
-		// ----- Your Code Here -----
-
-
-
-
-		// 执行到这里时，谱面完成加载
-		return true;
+		if (!string.IsNullOrEmpty(data)) {
+			var t = Assets.ExternalCode.WebApi.Game.ParseTabularAsync(data);
+			t.Wait();
+			Notes = new List<NoteInfo>();
+			Dictionary<long, List<TentacleGuitar.Tabular.Note>> result = t.Result.Notes;
+			if (Notes != null) {
+				CurrentNoteNum = 0;
+				foreach (var noteList in result) {
+					CurrentNoteNum += noteList.Value.Count;
+					for (int i = 0; i < noteList.Value.Count; i++) {
+						TentacleGuitar.Tabular.Note n = noteList.Value[i];
+						Notes.Add(new NoteInfo(
+							Mathf.Clamp(n.Fret - 1, 0, 23),
+							n.String,
+							(float)noteList.Key / 1000f,
+							n.Fret == 0 ? NoteInfo.NoteType.Zero : NoteInfo.NoteType.Tap
+						));
+					}
+				}
+				Notes.Sort(new NoteListSorter());
+				CurrentShowNoteTime = Stage.TheStageSetting.ShowNoteTime;
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 
 
@@ -46,11 +84,10 @@ public class BeatMapManager {
 	/// 调用 LoadBeatMap() 前已经调用一次了，无需重复清除
 	/// </summary>
 	public static void ClearBeatMap () {
-
-
-		// ----- Your Code Here -----
-
-
+		CurrentShowNoteTime = 0;
+		CurrentLoadedIndex = 0;
+		CurrentNoteNum = 0;
+		Notes = null;
 	}
 
 
@@ -81,7 +118,20 @@ public class BeatMapManager {
 	/// </summary>
 	public static void StageLateUpdate () {
 
-		// ----- Your Code Here -----
+		if (Stage.GamePlaying && StageMusic.Main.IsReady && StageMusic.Main.IsPlaying && CurrentNoteNum > 0) {
+
+			float time = StageMusic.Main.Time;
+
+			for (; CurrentLoadedIndex < Notes.Count; CurrentLoadedIndex++) {
+				float noteTime = Notes[CurrentLoadedIndex].Time;
+				if (noteTime > time + CurrentShowNoteTime) {
+					break;
+				} else {
+					Stage.AddNote(Notes[CurrentLoadedIndex]);
+				}
+			}
+
+		}
 
 	}
 
@@ -108,24 +158,11 @@ public class BeatMapManager {
 	/// </summary>
 	/// <returns> 音符总数，没加载谱面的话返回0 </returns>
 	public static int GetNoteSum () {
-
-
-		// ----- Your Code Here -----
-
-
-		return 1000;
+		return CurrentNoteNum;
 	}
 
 	#endregion
 
-
-	#region -------- Stage API --------
-
-
-	// 请看 Stage.cs 里的 #region -------- Public -------- (170行附近)
-	
-	
-	#endregion
 
 
 }

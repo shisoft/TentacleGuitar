@@ -5,6 +5,7 @@ using CodeStage.AntiCheat.ObscuredTypes;
 using TentacleGuitarUnity;
 using Assets.ExternalCode.WebApi;
 using Assets.ExternalCode.Models;
+using System.IO;
 
 
 /// <summary>
@@ -24,35 +25,7 @@ public class NetworkManager
     #region -------- Param --------
 
 
-    // User Stuff
 
-    /// <summary>
-    /// 用户是否登陆
-    /// </summary>
-    public static bool IsLogedIn
-    {
-        get
-        {
-
-            // --------- Your Code Here --------
-
-            return true;
-        }
-    }
-
-    /// <summary>
-    /// 获取当前用户的用户名，未登录的话返回""
-    /// </summary>
-    public static string CurrentUserName
-    {
-        get
-        {
-
-            // --------- Your Code Here --------
-
-            return "";
-        }
-    }
 
     /// <summary>
     /// 获取当前用户的登陆令牌（“记住我”功能使用，加密保存至本地，不要直接返回真实密码），未登录的话返回""
@@ -70,52 +43,6 @@ public class NetworkManager
     }
 
 
-    // Limit Times
-
-    /// <summary>
-    /// 等待登陆时间，单位秒。点击登陆后，若超过这个时间则宣告登陆失败。
-    /// </summary>
-    public static int LoginLimitTime
-    {
-        get
-        {
-
-            // -------- Your Code Here --------
-
-            return 40;
-        }
-    }
-
-    /// <summary>
-    /// 等待登出时间，单位秒。同上
-    /// </summary>
-    public static int LogoutLimitTime
-    {
-        get
-        {
-
-            // -------- Your Code Here --------
-
-            return 40;
-        }
-    }
-
-    /// <summary>
-    /// 等待加载歌曲信息的时间，单位秒。同上
-    /// </summary>
-    public static int LoadSongListLimitTime
-    {
-        get
-        {
-
-            // -------- Your Code Here --------
-
-            return 40;
-        }
-    }
-
-
-    // SongList Stuff
 
 
     /// <summary>
@@ -124,14 +51,12 @@ public class NetworkManager
     /// </summary>
     public static List<Music> SongList = new List<Music>();
 
+
     #endregion
 
 
 
     #region -------- Server Logic --------
-
-
-    #region --- Try ---
 
 
     /// <summary>
@@ -190,12 +115,12 @@ public class NetworkManager
     /// <summary>
     /// 尝试下载列表中的一首歌
     /// </summary>
-    public static IEnumerator TryDownloadSong(string id)
-    {
+	public static IEnumerator TryDownloadSong (string id) 
+	{
 
-        Stage.SetDownLoadProgress(id, 0.2f);
+		Stage.SetDownLoadProgress(id, 0.2f);
 
-        var t0 = Game.GetInstrumentAsync(new System.Guid(id));
+		var t0 = Game.GetInstrumentAsync(new System.Guid(id));
         while (!t0.IsCompleted)
         {
             yield return new WaitForSeconds(0.01f);
@@ -245,30 +170,6 @@ public class NetworkManager
     #endregion
 
 
-    #region --- Cancel ---
-
-
-
-    /// <summary>
-    /// 尝试取消下载某首歌
-    /// </summary>
-    /// <param name="id"></param>
-    public static void CancelDownloadSongImmediate(string id)
-    {
-
-        // --------- Your Code Here --------
-
-
-
-    }
-
-
-    #endregion
-
-
-    #endregion
-
-
 
     #region -------- Local Logic --------
 
@@ -282,16 +183,8 @@ public class NetworkManager
     /// <returns>  </returns>
     public static bool SongIsDownLoaded(string id)
     {
-
-
-        // -------- Your Code Here --------
-
-
-        //<Test>
-        bool d = Stage.SongCards.ContainsKey(id) && Stage.SongCards[id].IsDownloaded;
-        //</Test>
-
-        return d;
+		return File.Exists(Path.Combine(Path.Combine(Application.persistentDataPath, id), "Music.mp3")) &&
+			File.Exists(Path.Combine(Path.Combine(Application.persistentDataPath, id), "BeatMap.json"));
     }
 
 
@@ -303,10 +196,7 @@ public class NetworkManager
     /// <returns></returns>
     public static string GetSongLocalPath(string id)
     {
-
-        // -------- Your Code Here --------
-
-        return System.IO.Path.Combine(Application.dataPath, "Ccna — Aquarius.wav");
+		return Path.Combine(Path.Combine(Application.persistentDataPath, id), "Music.mp3");
     }
 
 
@@ -317,77 +207,13 @@ public class NetworkManager
     /// <returns></returns>
     public static string GetBeatMapLocalPath(string id)
     {
-
-        // -------- Your Code Here --------
-
-
-        return System.IO.Path.Combine(Application.dataPath, "ReadMe.txt");
+		return Path.Combine(Path.Combine(Application.persistentDataPath, id), "BeatMap.json");
     }
 
 
     #endregion
 
 
-
-    #region -------- Mono Message --------
-
-
-    /// <summary>
-    /// 当前场景的逻辑层准备就绪时调用一次，主线程。
-    /// Unity的Scene载入时才会触发这个函数，在同一个Scene里 重新载入歌曲和谱面 不会再次调用这个函数
-    /// 可以保证此时 Stage、StageMusic、PoolManager 等类已经 Awake，详情查看 Edit -> Project Setting -> Script Execution Order
-    /// </summary>
-    public static void StageAwake()
-    {
-
-        // ----- Your Code Here -----
-
-    }
-
-
-    /// <summary>
-    /// 画面更新时调用一次，主线程
-    /// 暂停时也会持续调用，谱面尚未加载时也会持续调用，下同
-    /// 画面更新 是指 Unity显示层（以玩家眼中的游戏画面为准）更新，距离上次调用的时间为 UnityEngine.Time.deltaTime
-    /// 当前歌曲播放的进度（秒）为 TentacleGuitarUnity.Stage.Time，暂停时持续刷新同一个秒数
-    /// 请适当 cache 节约性能
-    /// </summary>
-    public static void StageLateUpdate()
-    {
-
-        // ----- Your Code Here -----
-
-    }
-
-    /// <summary>
-    /// Unity物理层、逻辑层更新时调用一次
-    /// 多次调用的时间间隔相等，大约为0.02s，具体时间用 UnityEngine.Time.deltaTime 可以获取 
-    /// 主线程假死会使时间间隔变大，此时 deltaTime 有一定几率依旧显示正常
-    /// </summary>
-    public static void StageFixedUpdate()
-    {
-
-        // ----- Your Code Here -----
-
-    }
-
-    #endregion
-
-
-
-    #region -------- Stage API --------
-
-
-    // 完成登陆时调用 Stage.LoginDone (bool 是否登陆成功, bool 是否清空输入框里的密码 = false, string 错误信息 = "") 确保此时可以正常使用 #region Logic 里的函数
-
-    // 完成登出时调用 Stage.LogoutDone (bool 是否登出成功, bool 是否忘记密码 = false, string 错误信息 = "") 确保此时已经没有 CurrentUser 了
-
-    // 完成加载歌曲信息时调用  Stage.LoadSongListDone (bool 是否加载成功, string 错误信息 = "") 确保此时能够正常访问 #region SongListLogic 里的函数
-
-    // 完成下载歌曲后调用 Stage.DownLoadDone(bool 是否加载成功, string 歌曲ID, string 错误信息 = "")
-
-
-    #endregion
 
 
 

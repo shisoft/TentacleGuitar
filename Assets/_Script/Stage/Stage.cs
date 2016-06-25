@@ -315,8 +315,10 @@ public class Stage : MonoBehaviour {
 	}
 
 
-	
 
+	public void TryStopGame () {
+		StopGame();
+	}
 	
 
 
@@ -355,10 +357,19 @@ public class Stage : MonoBehaviour {
 		BeatMapManager.ClearBeatMap();
 		GamePlaying = false;
 		TheStageSetting.TitleBGM.UnPause();
+		TheStageSetting.AutoPlayTagOn = TheStageSetting.AutoPlay;
+		TheStageSetting.ResultScore = 0;
+		TheStageSetting.ResultPerfect = StageScore.PerfectNum;
+		TheStageSetting.ResultGood = StageScore.GoodNum;
+		TheStageSetting.ResultMiss = StageScore.MissNum;
+		TheStageSetting.ResultMaxCombo = StageScore.MaxCombo;
 		InitAimTransform();
 		RemoveAllNotes();
 		TheStageSetting.AutoPlay = true;
 		StageScore.Close();
+
+		
+
 	}
 
 
@@ -851,7 +862,7 @@ public class Stage : MonoBehaviour {
 		}
 
 		
-		///*Mp3 --> Wav
+		/*Mp3 --> Wav
 		//#if UNITY_STANDALONE || UNITY_EDITOR
 
 		if (Path.GetExtension(path) == ".mp3") {
@@ -941,7 +952,7 @@ public class Stage : MonoBehaviour {
 		RemoveAllNotes();
 		TheStageSetting.TitleBGM.UnPause();
 		TheStageSetting.AutoPlayTagOn = TheStageSetting.AutoPlay;
-		if (TheStageSetting.AutoPlay) {
+		if (!TheStageSetting.AutoPlay) {
 			NetworkManager.TryUploadResult(CurrentSongID, (int)StageScore.CurrentScore, StageScore.MaxCombo);
 		}
 		TheStageSetting.AutoPlay = true;
@@ -951,6 +962,8 @@ public class Stage : MonoBehaviour {
 		TheStageSetting.ResultMiss = StageScore.MissNum;
 		TheStageSetting.ResultMaxCombo = StageScore.MaxCombo;
 		GamePlaying = false;
+		InitAimTransform();
+		RemoveAllNotes();
 	}
 
 

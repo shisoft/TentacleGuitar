@@ -53,14 +53,7 @@ public class InputManager {
 		return freqIdx;
 	}
 
-	/// <summary>
-	/// 画面更新时调用一次，主线程
-	/// 暂停时也会持续调用，谱面尚未加载时也会持续调用，下同
-	/// 画面更新 是指 Unity显示层（以玩家眼中的游戏画面为准）更新，距离上次调用的时间为 UnityEngine.Time.deltaTime
-	/// 当前歌曲播放的进度（秒）为 TentacleGuitarUnity.Stage.Time，暂停时持续刷新同一个秒数
-	/// 请适当 cache 节约性能
-	/// </summary>
-	public static void StageUpdate () {
+	public static List<InNote> getNotes (){
 		int bins = 8192;
 		float[] spectrum = StageMicrophone.GetSpectrumData (bins);
 		if (spectrum != null) {
@@ -90,6 +83,21 @@ public class InputManager {
 			if (noteList.Count > maxNotesInChord) {
 				noteList.RemoveRange (maxNotesInChord, noteList.Count - maxNotesInChord);
 			}
+			return noteList;
+		}
+		return null;
+	}
+
+	/// <summary>
+	/// 画面更新时调用一次，主线程
+	/// 暂停时也会持续调用，谱面尚未加载时也会持续调用，下同
+	/// 画面更新 是指 Unity显示层（以玩家眼中的游戏画面为准）更新，距离上次调用的时间为 UnityEngine.Time.deltaTime
+	/// 当前歌曲播放的进度（秒）为 TentacleGuitarUnity.Stage.Time，暂停时持续刷新同一个秒数
+	/// 请适当 cache 节约性能
+	/// </summary>
+	public static void StageUpdate () {
+		var noteList = getNotes();
+		if (noteList != null) {
 			var strNoteList = new List<string> (); 
 			foreach (InNote note in noteList) {
 				strNoteList.Add (NotesMap.notes[note.Id]);

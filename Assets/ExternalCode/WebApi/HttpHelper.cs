@@ -9,6 +9,17 @@ namespace Assets.ExternalCode.WebApi
 {
     public static class HttpHelper
     {
+        public static void CopyTo(this Stream input, Stream output)
+        {
+            byte[] buffer = new byte[16 * 1024]; // Fairly arbitrary size
+            int bytesRead;
+
+            while ((bytesRead = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, bytesRead);
+            }
+        }
+
         public static CookieContainer cookie = new CookieContainer();
         public static string Post(string Url, Dictionary<string, string> args)
         {
@@ -88,9 +99,12 @@ namespace Assets.ExternalCode.WebApi
                 response.Cookies = webReq.CookieContainer.GetCookies(new Uri(Url));
 
                 var stream = response.GetResponseStream();
-                var br = new BinaryReader(stream);
-                ret = br.ReadBytes(Convert.ToInt32(stream.Length));
+                var tmpstream = new MemoryStream();
+                stream.CopyTo(tmpstream);
+                var br = new BinaryReader(tmpstream);
+                ret = br.ReadBytes(Convert.ToInt32(tmpstream.Length));
                 br.Close();
+                tmpstream.Close();
                 stream.Close();
                 response.Close();
                 newStream.Close();

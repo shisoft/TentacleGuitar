@@ -9,5 +9,7 @@ namespace Assets.ExternalCode.Models
         public string Title { get; set; }
 
         public int Level { get; set; }
+
+        public int Offset { get; set; }
     }
 }

@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using CodeStage.AntiCheat.ObscuredTypes;
 using TentacleGuitarUnity;
+using Assets.ExternalCode.WebApi;
+using Assets.ExternalCode.Models;
 
 
 /// <summary>
@@ -49,12 +52,12 @@ public class NetworkManager {
 	/// <summary>
 	/// 获取当前用户的登陆令牌（“记住我”功能使用，加密保存至本地，不要直接返回真实密码），未登录的话返回""
 	/// </summary>
-	public static string LoginToken {
+	public static ObscuredString LoginToken {
+		set {
+			ObscuredPrefs.SetString("LoginToken", value);
+		}
 		get {
-
-			// --------- Your Code Here --------
-
-			return "TestToken";
+			return ObscuredPrefs.GetString("LoginToken", "");
 		}
 	}
 
@@ -100,43 +103,13 @@ public class NetworkManager {
 
 	// SongList Stuff
 
-	public struct SongInfo {
-		public string ID;
-		public string Title;
-		public int Level;
-
-		public SongInfo (string id, string title, int level) {
-			ID = id;
-			Title = title;
-			Level = level;
-		}
-
-	}
-
 
 	/// <summary>
 	/// 获取歌曲列表的歌曲总数，包含下载的和未下载的
 	/// 这步要获取在本地的Cache，不要访问服务器
 	/// </summary>
-	public static SongInfo[] SongList {
-		get {
-
-
-			// -------- Your Code Here --------
-
-
-			//<Test> 请在完成逻辑后删除Test代码
-			return new SongInfo[]{
-				new SongInfo("0001","Test_1", 1),
-				new SongInfo("0002","Test_2", 3),
-				new SongInfo("0003","Test_3", 7),
-				new SongInfo("0004","Test_4", 10)
-			};
-			//</Test>
-		}
-	}
-
-
+	public static List<Music> SongList = new List<Music>();
+	
 	#endregion
 
 
@@ -153,36 +126,25 @@ public class NetworkManager {
 	/// <param name="name"> 用户名 </param>
 	/// <param name="passWord"> 密码或登陆令牌 </param>
 	/// <param name="useRealPassWord"> 若为true 则参数passWord是真实密码，否则为“记住我”功能使用的登陆令牌，这个令牌我会加密保存在本地 </param>
-	public static IEnumerator TryLogin (ObscuredString name, ObscuredString passWord, bool useRealPassWord = true) {
+	public static IEnumerator TryLogin (ObscuredString name, ObscuredString passWord) {
 
+		//string token = Account.SignIn(name, passWord);
 
-		// --------- Your Code Here --------
+		var t = Account.SignInAsync(name, passWord);
 
+		while (!t.IsCompleted) {
+			yield return new WaitForSeconds(0.01f);
+		}
+		
+		string token = t.Result;
 
-		// <Test> 完成逻辑后删除Test代码
-		yield return new WaitForSeconds(0.5f);
-		Stage.LoginDone(true);
-		// </Test>
+		if (string.IsNullOrEmpty(token)) {
+			Stage.LoginDone(false, false, "Fail to Sign In.");
+		} else {
+			LoginToken = token;
+			Stage.LoginDone(true);
+		}
 
-		yield return null;
-	}
-
-
-	/// <summary>
-	/// 尝试登出当前用户
-	/// </summary>
-	public static IEnumerator TryLogout () {
-
-
-		// --------- Your Code Here --------
-
-
-		// <Test> 完成逻辑后删除Test代码
-		yield return new WaitForSeconds(0.5f);
-		Stage.LogoutDone(true);
-		// </Test>
-
-		yield return null;
 	}
 
 
@@ -190,17 +152,17 @@ public class NetworkManager {
 	/// 尝试加载歌曲列表的信息
 	/// </summary>
 	public static IEnumerator TryLoadSongListInfo () {
+		SongList.Clear();
 
+		var t = Game.GetMusicsAsync();
 
-		// --------- Your Code Here --------
+		while (!t.IsCompleted) {
+			yield return new WaitForSeconds(0.01f);
+		}
 
+		SongList = t.Result;
 
-		//<Test> 完成逻辑后删除Test代码
-		yield return new WaitForSeconds(1f);
 		Stage.LoadSongListDone(true);
-		//</Test>
-
-		yield return null;
 	}
 
 
@@ -209,24 +171,37 @@ public class NetworkManager {
 	/// </summary>
 	public static IEnumerator TryDownloadSong (string id) {
 
-		Stage.SetDownLoadProgress(id, 0.05f);
+		Stage.SetDownLoadProgress(id, 0.2f);
 
-		// Tip: 刚开始时就把进度设置成 0.05，让用户知道这首歌已经开始下载了。
-
-
-
-		// --------- Your Code Here --------
-
-		
-
-		//<Test> 完成逻辑后删除Test代码
-		for (int i = 5; i < 100; i++) {
-			Stage.SetDownLoadProgress(id,(float)i / 100f);
+		var t0 = Game.GetInstrumentAsync(new System.Guid(id));
+		while (!t0.IsCompleted) {
 			yield return new WaitForSeconds(0.01f);
 		}
-		Stage.DownLoadDone(true, id);
-		//</Test>
+		byte[] b = t0.Result;
 
+
+		FileUtility.ByteToFile(
+			b,
+			Application.persistentDataPath + "/" + id + "/Music.mp3"
+		);
+
+
+		Stage.SetDownLoadProgress(id, 0.8f);
+
+
+		var t1 = Game.GetTabularStringAsync(new System.Guid(id));
+		while (!t1.IsCompleted) {
+			yield return new WaitForSeconds(0.01f);
+		}
+		FileUtility.WriteText(
+			t1.Result, 
+			Application.persistentDataPath + "/" + id + "/BeatMap.json"
+		);
+
+
+		Stage.SetDownLoadProgress(id, 1f);
+		Stage.DownLoadDone(true, id);
+		
 		yield return null;
 	}
 
@@ -238,9 +213,7 @@ public class NetworkManager {
 	/// <param name="score">分数</param>
 	/// <param name="maxCombo">最大连击数</param>
 	public static void TryUploadResult (string songID, int score, int maxCombo) {
-
-
-
+		Game.SubmitScoreAsync(new System.Guid(songID), LoginToken, score);
 	}
 
 
@@ -249,24 +222,6 @@ public class NetworkManager {
 
 	#region --- Cancel ---
 
-
-	/// <summary>
-	/// 尝试取消登陆
-	/// </summary>
-	public static void CancelLoginImmediate () {
-
-		// --------- Your Code Here --------
-
-		Stage.LoginDone(false, false, "Signin has been canceled.");
-	}
-
-
-	public static void CancelLogoutImmediate () {
-
-		// --------- Your Code Here --------
-
-		Stage.LogoutDone(false, false, "Signout has been canceled.");
-	}
 
 
 	/// <summary>

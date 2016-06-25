@@ -231,6 +231,19 @@ public class NetworkManager {
 	}
 
 
+	/// <summary>
+	/// 上传玩家成绩
+	/// </summary>
+	/// <param name="songID">歌曲ID</param>
+	/// <param name="score">分数</param>
+	/// <param name="maxCombo">最大连击数</param>
+	public static void TryUploadResult (string songID, int score, int maxCombo) {
+
+
+
+	}
+
+
 	#endregion
 
 
@@ -310,7 +323,7 @@ public class NetworkManager {
 
 		// -------- Your Code Here --------
 
-		return @"D:\Mine\Unity3D\TentacleGuitar\Assets\Ccna — Aquarius.wav";
+		return Application.dataPath + @"\Ccna — Aquarius.wav";
 	}
 
 
@@ -323,7 +336,8 @@ public class NetworkManager {
 
 		// -------- Your Code Here --------
 
-		return @"D:\Mine\Unity3D\TentacleGuitar\Assets\ReadMe.txt";
+
+		return Application.dataPath + @"\ReadMe.txt";
 	}
 
 

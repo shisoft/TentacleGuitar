@@ -176,6 +176,18 @@ public class StageSetting {
 		}
 	}
 
+	public TextMesh[] FretSigns {
+		get {
+			return fretSigns;
+		}
+	}
+
+	public Color FretSignColor {
+		get {
+			return fretSignColor;
+		}
+	}
+
 
 	#endregion
 
@@ -351,6 +363,43 @@ public class StageSetting {
 		}
 	}
 
+	public bool AutoPlayTagOn {
+		set {
+			autoPlayTag.gameObject.SetActive(value);
+		}
+	}
+
+	public int ResultScore {
+		set {
+			resultScore.text = value.ToString("0000000");
+		}
+	}
+
+	public int ResultPerfect {
+		set {
+			resultPerfect.text = value.ToString("00");
+		}
+	}
+
+	public int ResultGood {
+		set {
+			resultGood.text = value.ToString("00");
+		}
+	}
+
+	public int ResultMiss {
+		set {
+			resultMiss.text = value.ToString("00");
+		}
+	}
+
+	public int ResultMaxCombo {
+		set {
+			resultMaxCombo.text = value.ToString("00");
+		}
+	}
+
+
 
 	#endregion
 
@@ -424,8 +473,11 @@ public class StageSetting {
 	[SerializeField]
 	private Color fretWireLightBloomColor;
 	[SerializeField]
+	private Color fretSignColor;
+	[SerializeField]
 	private SpriteRenderer[] fretWireLights;
-
+	[SerializeField]
+	private TextMesh[] fretSigns;
 
 	// Camera
 	[Space(20f)]
@@ -476,6 +528,18 @@ public class StageSetting {
 	private InputField passwordField;
 	[SerializeField]
 	private Selectable[] loginUIStuff;
+	[SerializeField]
+	private Text resultScore;
+	[SerializeField]
+	private Text resultPerfect;
+	[SerializeField]
+	private Text resultGood;
+	[SerializeField]
+	private Text resultMiss;
+	[SerializeField]
+	private Text resultMaxCombo;
+	[SerializeField]
+	private Transform autoPlayTag;
 
 	
 	public Vector3 TrackPos (int trackID = 0, int stringID = 0) {

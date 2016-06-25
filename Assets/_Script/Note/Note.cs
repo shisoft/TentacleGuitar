@@ -33,6 +33,7 @@ public class Note : MonoBehaviour {
 		}
 		set {
 			x = Mathf.Clamp(value, 0, 23);
+			fretSign.text = (x + 1).ToString();
 		}
 	}
 
@@ -82,10 +83,10 @@ public class Note : MonoBehaviour {
 		}
 	}
 
-	public SpriteRenderer[] AllRenderer {
+	public Renderer[] AllRenderer {
 		get {
 			if (allRenderer == null) {
-				allRenderer = GetComponentsInChildren<SpriteRenderer>(true);
+				allRenderer = GetComponentsInChildren<Renderer>(true);
 			}
 			return allRenderer;
 		}
@@ -115,6 +116,7 @@ public class Note : MonoBehaviour {
 				for (int i = 0; i < AllRenderer.Length; i++) {
 					AllRenderer[i].enabled = value;
 				}
+				fretSign.color = value ? Color.white : Color.clear;
 			}
 			isReady = value;
 		}
@@ -144,7 +146,9 @@ public class Note : MonoBehaviour {
 	private SpriteRenderer[] ColorChangeSRs;	// 需要根据String改变颜色的SR
 	[SerializeField]
 	private Transform shadowTF;
-	private SpriteRenderer[] allRenderer = null;	// 所有和这个音符相关的 SpriteRenderer
+	[SerializeField]
+	private TextMesh fretSign;
+	private Renderer[] allRenderer = null;	// 所有和这个音符相关的 Renderer
 	private Animator ani = null;
 	private bool isReady = true;
 
@@ -195,6 +199,7 @@ public class Note : MonoBehaviour {
 
 
 	public void Despawn () {
+		fretSign.color = Color.clear;
 		PoolManager.Pools["Note"].DespawnToDefault(this.transform);
 	}
 
@@ -204,6 +209,7 @@ public class Note : MonoBehaviour {
 		Y = 0;
 		Time = 0f;
 		State = NoteState.None;
+		fretSign.color = Color.clear;
 		BeatOffset = 0f;
 		SetLayer();
 		SetColor();
@@ -226,6 +232,7 @@ public class Note : MonoBehaviour {
 		IsReady = false;
 		NoteUpdate();
 	}
+
 
 
 	void OnDisable () {
@@ -319,6 +326,13 @@ public class Note : MonoBehaviour {
 		if (pos.z > 0 != prevZ > 0) {
 			SetLayer();
 		}
+
+		float cameraDis = Mathf.Clamp(Mathf.Abs(Stage.TheStageSetting.CameraPos.x - transform.position.x) * 3f, 0f, 3f);
+
+		fretSign.color = 
+			State != NoteState.None || Type == NoteInfo.NoteType.Zero ? 
+			Color.clear :
+			Color.white * Mathf.Clamp01(lifeTime + 3f) * (3f - cameraDis);
 		
 		// Rot
 		Quaternion angle = Type == NoteInfo.NoteType.Zero ? Quaternion.identity : Quaternion.Lerp(

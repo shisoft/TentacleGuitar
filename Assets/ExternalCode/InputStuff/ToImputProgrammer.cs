@@ -13,15 +13,6 @@ using System.Collections;
 public class InputManager {
 
 
-	#region -------- Logic Message ---------
-
-
-
-
-
-	#endregion
-
-
 	#region -------- Mono Message ---------
 
 
@@ -50,6 +41,7 @@ public class InputManager {
 
 	}
 
+
 	/// <summary>
 	/// Unity物理层、逻辑层更新时调用一次
 	/// 多次调用的时间间隔相等，大约为0.02s，具体时间用 UnityEngine.Time.deltaTime 可以获取 
@@ -60,9 +52,6 @@ public class InputManager {
 		// ----- Your Code Here -----
 
 	}
-
-
-
 
 
 	#endregion

@@ -17,8 +17,8 @@ public class ForTest : MonoBehaviour {
 
 		RandomNote = PlayerPrefs.GetInt("Test_RandomNote", 1) == 1;
 		KeyboardCamera = PlayerPrefs.GetInt("Test_KeyboardCamera", 1) == 1;
-		SongPath = PlayerPrefs.GetString("Test_SongPath", Application.dataPath + @"/Ccna — Aquarius.wav");
-		BeatMapPath = PlayerPrefs.GetString("Test_BeatMapPath", Application.dataPath + @"/Ccna — Aquarius.wav");
+		SongPath = PlayerPrefs.GetString("Test_SongPath", Application.dataPath + @"/Short.wav");
+		BeatMapPath = PlayerPrefs.GetString("Test_BeatMapPath", Application.dataPath + @"/Short.wav");
 		speedScale = PlayerPrefs.GetInt("Test_speedScale", 4);
 		
 

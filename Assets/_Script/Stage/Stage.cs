@@ -49,6 +49,7 @@ public class Stage : MonoBehaviour {
 			return GamePlaying ? StageMusic.Main.Time : UnityEngine.Time.time;
 		}
 	}
+	public static string CurrentSongID = "";
 
 	// Data Stuff
 	[SerializeField]
@@ -103,7 +104,7 @@ public class Stage : MonoBehaviour {
 		}
 		TheStageSetting.AutoPlay = true;
 		StageScore.Close();
-		StageMusic.StopToEndCallback += this.CleanNoteOnEnd;
+		StageMusic.StopToEndCallback += this.OnMusicEnd;
 		BeatMapManager.StageAwake();
 		InputManager.StageAwake();
 		NetworkManager.StageAwake();
@@ -152,6 +153,16 @@ public class Stage : MonoBehaviour {
 		}
 		
 		// Aim Movement
+
+		int cameraID = (int)TheStageSetting.TrackID(TheStageSetting.CameraPos).x;
+		for (int i = 0; i < TheStageSetting.FretSigns.Length; i++) {
+			TheStageSetting.FretSigns[i].color = Color.Lerp(
+				TheStageSetting.FretSigns[i].color,
+				GamePlaying && Mathf.Abs(cameraID - i) < 4 ? TheStageSetting.FretSignColor : Color.clear,
+				0.1f
+			);
+		}
+
 		ShowingScore = StageScore.CurrentScore >= StageScore.FullScore ?
 			(int)StageScore.FullScore :
 			(int)Mathf.Lerp(
@@ -298,6 +309,7 @@ public class Stage : MonoBehaviour {
 				NetworkManager.GetSongLocalPath(id),
 				NetworkManager.GetBeatMapLocalPath(id)
 			);
+			CurrentSongID = id;
 		} else if (Main) {
 			if (SongCards.ContainsKey(id) && SongCards[id] && !SongCards[id].IsDownloading) {
 				SongCards[id].IsDownloading = true;
@@ -952,8 +964,20 @@ public class Stage : MonoBehaviour {
 	}
 
 
-	private void CleanNoteOnEnd () {
+	private void OnMusicEnd () {
 		RemoveAllNotes();
+		TheStageSetting.TitleBGM.UnPause();
+		TheStageSetting.AutoPlayTagOn = TheStageSetting.AutoPlay;
+		if (TheStageSetting.AutoPlay) {
+			NetworkManager.TryUploadResult(CurrentSongID, (int)StageScore.CurrentScore, StageScore.MaxCombo);
+		}
+		TheStageSetting.AutoPlay = true;
+		TheStageSetting.ResultScore = (int)StageScore.CurrentScore;
+		TheStageSetting.ResultPerfect = StageScore.PerfectNum;
+		TheStageSetting.ResultGood = StageScore.GoodNum;
+		TheStageSetting.ResultMiss = StageScore.MissNum;
+		TheStageSetting.ResultMaxCombo = StageScore.MaxCombo;
+		GamePlaying = false;
 	}
 
 

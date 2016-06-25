@@ -124,7 +124,7 @@ public class Note : MonoBehaviour {
 
 	public NoteInfo NoteInfo {
 		get {
-			return new NoteInfo(X, Y, Time, Type);
+			return new NoteInfo(X, Y, Time, Type, 0);
 		}
 		set {
 			X = value.X;

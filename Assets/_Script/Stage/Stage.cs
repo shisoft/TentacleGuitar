@@ -124,10 +124,11 @@ public class Stage : MonoBehaviour {
 		}
 	}
 
+		long step = 0;
 
 	void Update () {
 
-
+			step++;
 		///*
 		if (GamePlaying && StageMicrophone.IsReady) {
 				float[] f = StageMicrophone.GetData(StageMicrophone.SamplePosition() - StageMicrophone.sampleRate, StageMicrophone.sampleRate);
@@ -151,11 +152,20 @@ public class Stage : MonoBehaviour {
 
 		// Menu Random Note
 
-		if (!GamePlaying) {
-			RandomAddNote(
-				Time + TheStageSetting.ShowNoteTime,
-				0, 24, 0, 6, 0f, 0.9f
-			);
+		if (GamePlaying) {
+//			RandomAddNote(
+//				Time + TheStageSetting.ShowNoteTime,
+//				0, 24, 0, 6, 0f, 0.9f
+//			);
+				if (step >= 200){
+					step = 0;
+					Stage.AddNote(new NoteInfo(
+						7,
+						6,
+						Time + TheStageSetting.ShowNoteTime,
+						0, 7
+					));
+				}
 		}
 		
 		// Aim Movement

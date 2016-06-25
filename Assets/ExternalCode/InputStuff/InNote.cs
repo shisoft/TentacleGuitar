@@ -12,6 +12,7 @@ namespace AssemblyCSharp
 
 		public int Id { get; set;}
 		public double Amp { get; set;}
+		public float Time { get; set;}
 
 	}
 }

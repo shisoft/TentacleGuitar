@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using System.Threading.Tasks;
 using Assets.ExternalCode.Models;
 using Newtonsoft.Json;
 using TentacleGuitar.Tabular;
@@ -15,11 +16,14 @@ namespace Assets.ExternalCode.WebApi
         /// 获取曲目列表
         /// </summary>
         /// <returns>返回含有Music对象的List</returns>
-        public static List<Music> GetMusics()
+        public static Task<List<Music>> GetMusicsAsync()
         {
-            var args = new Dictionary<string, string>();
-            var ret = HttpHelper.Post("http://tentacleguitar.azurewebsites.net/GetMusics", args);
-            return JsonConvert.DeserializeObject<List<Music>>(ret);
+            return Task.Factory.StartNew(()=>
+            {
+                var args = new Dictionary<string, string>();
+                var ret = HttpHelper.Post("http://tentacleguitar.azurewebsites.net/GetMusics", args);
+                return JsonConvert.DeserializeObject<List<Music>>(ret);
+            });
         }
 
         /// <summary>
@@ -28,13 +32,16 @@ namespace Assets.ExternalCode.WebApi
         /// <param name="MusicId">曲目ID</param>
         /// <param name="UserToken">用户Token</param>
         /// <param name="Score">分数</param>
-        public static void SubmitScore(Guid MusicId, string UserToken, long Score)
+        public static Task SubmitScoreAsync(Guid MusicId, string UserToken, long Score)
         {
-            var args = new Dictionary<string, string>();
-            args.Add("Id", MusicId.ToString());
-            args.Add("Token", UserToken);
-            args.Add("Score", Score.ToString());
-            var ret = HttpHelper.Post("http://tentacleguitar.azurewebsites.net/SignIn", args);
+            return Task.Factory.StartNew(()=>
+            {
+                var args = new Dictionary<string, string>();
+                args.Add("Id", MusicId.ToString());
+                args.Add("Token", UserToken);
+                args.Add("Score", Score.ToString());
+                var ret = HttpHelper.Post("http://tentacleguitar.azurewebsites.net/SignIn", args);
+            });
         }
 
         /// <summary>
@@ -42,24 +49,42 @@ namespace Assets.ExternalCode.WebApi
         /// </summary>
         /// <param name="MusicId">曲目ID</param>
         /// <returns>该曲目的字节集</returns>
-        public static byte[] GetInstrument(Guid MusicId)
+        public static Task<byte[]> GetInstrumentAsync(Guid MusicId)
         {
-            var args = new Dictionary<string, string>();
-            args.Add("Id", MusicId.ToString());
-            return HttpHelper.Blob("http://tentacleguitar.azurewebsites.net/GetInstrument", args);
+            return Task.Factory.StartNew(()=>
+            {
+                var args = new Dictionary<string, string>();
+                args.Add("Id", MusicId.ToString());
+                return HttpHelper.Blob("http://tentacleguitar.azurewebsites.net/GetInstrument", args);
+            });
         }
 
         /// <summary>
         /// 获取谱面
         /// </summary>
         /// <param name="MusicId">曲目ID</param>
-        /// <returns>返回Tabular对象</returns>
-        public static Tabular GetTabular(Guid MusicId)
+        /// <returns>返回谱面的文本形式</returns>
+        public static Task<string> GetTabularStringAsync(Guid MusicId)
         {
-            var args = new Dictionary<string, string>();
-            args.Add("Id", MusicId.ToString());
-            var ret = HttpHelper.Post("http://tentacleguitar.azurewebsites.net/GetTabular", args);
-            return JsonConvert.DeserializeObject<Tabular>(ret);
+            return Task.Factory.StartNew(()=>
+            {
+                var args = new Dictionary<string, string>();
+                args.Add("Id", MusicId.ToString());
+                return HttpHelper.Post("http://tentacleguitar.azurewebsites.net/GetTabular", args);
+            });
+        }
+        
+        /// <summary>
+        /// 将谱面文本转换为Tabular对象
+        /// </summary>
+        /// <param name="tabularStr"></param>
+        /// <returns></returns>
+        public static Task<Tabular> ParseTabularAsync(string tabularStr)
+        {
+            return Task.Factory.StartNew(()=>
+            {
+                return JsonConvert.DeserializeObject<Tabular>(tabularStr);
+            });
         }
     }
 }

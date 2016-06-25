@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
+using Assets.ExternalCode.Models;
 
 namespace Assets.ExternalCode.WebApi
 {
@@ -18,7 +20,7 @@ namespace Assets.ExternalCode.WebApi
             var args = new Dictionary<string, string>();
             args.Add("Username", Username);
             args.Add("Password", Password);
-            var ret = HttpHelper.HttpPost("http://tentacleguitar.azurewebsites.net/SignIn", args);
+            var ret = HttpHelper.Post("http://tentacleguitar.azurewebsites.net/SignIn", args);
             if (ret == "Access Denied")
                 return null;
             else

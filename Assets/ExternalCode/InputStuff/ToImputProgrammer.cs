@@ -14,8 +14,6 @@ using AssemblyCSharp;
 /// </summary>
 public class InputManager {
 
-	static float[] noteAppeared = new float[54];
-
 	#region -------- Mono Message ---------
 
 
@@ -85,9 +83,6 @@ public class InputManager {
 			if (noteList.Count > maxNotesInChord) {
 				noteList.RemoveRange (maxNotesInChord, noteList.Count - maxNotesInChord);
 			}
-			foreach (InNote n in noteList) {
-				noteAppeared [n.Id] = n.Time;
-			}
 			return noteList;
 		}
 		return null;
@@ -102,12 +97,19 @@ public class InputManager {
 	/// </summary>
 	public static void StageUpdate () {
 		var noteList = getNotes();
-		if (noteList != null) {
-			var strNoteList = new List<string> (); 
-			foreach (InNote note in noteList) {
-				strNoteList.Add (NotesMap.notes[note.Id]);
-			}
-			Debug.Log (string.Join(" ", strNoteList.ToArray()));
+//		if (noteList != null) {
+//			var strNoteList = new List<string> (); 
+//			foreach (InNote note in noteList) {
+//				strNoteList.Add (NotesMap.notes[note.Id]);
+//			}
+//			Debug.Log (string.Join(" ", strNoteList.ToArray()));
+//		}
+		if (noteList == null) {
+			return;
+		}
+		foreach (InNote note in noteList) {
+			//Debug.Log (note.Time);
+			Stage.CheckNote (note);
 		}
 	}
 

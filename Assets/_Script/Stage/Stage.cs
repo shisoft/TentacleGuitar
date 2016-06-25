@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using PathologicalGames;
 using CodeStage.AntiCheat.ObscuredTypes;
+using AssemblyCSharp;
 
 //http://tentacleguitar.azurewebsites.net/
 
@@ -479,6 +480,8 @@ public class Stage : MonoBehaviour {
 	}
 
 
+	static NoteInfo[] pendingNotes = new NoteInfo[54];
+
 
 	/// <summary>
 	/// 添加一个音符到场景中，主线程
@@ -491,6 +494,7 @@ public class Stage : MonoBehaviour {
 	/// 这个音符的信息
 	/// </param>
 	public static void AddNote (NoteInfo info) {
+		pendingNotes[info.PitchId] = info;
 		Transform tf = NotePool.SpawnToDefault("Note");
 		Note n = tf.GetComponent<Note>();
 		if (n) {
@@ -498,6 +502,34 @@ public class Stage : MonoBehaviour {
 		}
 		SortNotePool();
 	}
+
+		public static void CheckNote (InNote inote) {
+			int nodeIdx = inote.Id;
+			NoteInfo note = pendingNotes[nodeIdx];
+			var	inoteTime = inote.Time + 2;
+			var noteTime = note.Time;
+
+			double d = inoteTime - noteTime;
+			double absD = Mathf.Abs ((float)d);
+
+			if (absD > 2.0 || note.Time < 0) {
+				return;
+			}
+
+			Debug.Log (inoteTime + ", " + noteTime);
+
+			if (absD < 1) {
+				Debug.Log ("Good");
+			} if (d <= -1) {
+				Debug.Log ("Early");
+			} if (d >= 1) {
+				Debug.Log ("Late");
+			}
+			note.Time = -1f;
+			pendingNotes [nodeIdx] = note;
+			//Debug.Log (nodeIdx + ", " + pendingNotes [nodeIdx].Time);
+			//Debug.Log (note.Time);
+		}
 
 
 	/// <summary>

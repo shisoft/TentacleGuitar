@@ -87,9 +87,9 @@ namespace Assets.ExternalCode.WebApi
                 response.Cookies = webReq.CookieContainer.GetCookies(new Uri(Url));
 
                 var stream = response.GetResponseStream();
-                var memoryStream = new MemoryStream();
-                stream.Read(ret, 0, Convert.ToInt32(stream.Length));
-
+                var br = new BinaryReader(stream);
+                ret = br.ReadBytes(Convert.ToInt32(stream.Length));
+                br.Close();
                 stream.Close();
                 response.Close();
                 newStream.Close();

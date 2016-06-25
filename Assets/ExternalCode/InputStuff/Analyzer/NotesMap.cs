@@ -52,7 +52,7 @@ namespace AssemblyCSharp
 			noteFreq.Add("A5",880);
 			noteFreq.Add("A5#",932.3);
 			noteFreq.Add("B5",987.8);
-			noteFreq.Add("C6",1,046.50);
+			noteFreq.Add("C6",1046.50);
 		}
 	}
 }

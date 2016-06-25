@@ -76,6 +76,7 @@ namespace Assets.ExternalCode.WebApi
                 Param = Param.TrimEnd('&');
                 byte[] byteArray = Encoding.UTF8.GetBytes(Param);
                 HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(new Uri(Url));
+                webReq.Timeout = 1000 * 60 * 5;
                 webReq.Method = "POST";
                 webReq.ContentType = "application/x-www-form-urlencoded";
                 webReq.CookieContainer = cookie;

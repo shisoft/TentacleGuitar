@@ -278,7 +278,7 @@ public class NetworkManager {
 
 		// -------- Your Code Here --------
 
-		return Application.dataPath + @"\Ccna — Aquarius.wav";
+		return System.IO.Path.Combine(Application.dataPath, "Ccna — Aquarius.wav");
 	}
 
 
@@ -289,11 +289,11 @@ public class NetworkManager {
 	/// <returns></returns>
 	public static string GetBeatMapLocalPath (string id) {
 
-		// -------- Your Code Here --------
+        // -------- Your Code Here --------
 
 
-		return Application.dataPath + @"\ReadMe.txt";
-	}
+        return System.IO.Path.Combine(Application.dataPath, "ReadMe.txt");
+    }
 
 
 	#endregion

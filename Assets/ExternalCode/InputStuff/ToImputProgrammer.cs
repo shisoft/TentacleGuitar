@@ -58,8 +58,15 @@ public class InputManager {
 		if (spectrum != null) {
 			double threshold = 0.001;
 			Dictionary<int, InNote> notes = new Dictionary<int, InNote> ();
+			double maxAmp = 0, minAmp = 100;
 			for (int i = 0; i < spectrum.Length; i++) {
 				double sAmp = spectrum [i];
+				if (maxAmp < sAmp) {
+					maxAmp = sAmp;
+				}
+				if (minAmp > sAmp && sAmp > 0) {
+					minAmp = sAmp;
+				}
 				if (sAmp > threshold) {
 					var frequency = i * StageMicrophone.sampleRate / bins;
 					if (frequency > 70 && frequency < 1200) {
@@ -76,10 +83,12 @@ public class InputManager {
 			}
 			List<InNote> noteList = new List<InNote> ();
 			foreach (InNote note in notes.Values) {
-				noteList.Add (note);
+				if (note.Amp >= maxAmp * 0.8) {
+					noteList.Add (note);
+				}
 			}
 			noteList.Sort ((a, b) => a.Amp.CompareTo(b.Amp));
-			int maxNotesInChord = 6;
+			int maxNotesInChord = 7;
 			if (noteList.Count > maxNotesInChord) {
 				noteList.RemoveRange (maxNotesInChord, noteList.Count - maxNotesInChord);
 			}
@@ -97,7 +106,7 @@ public class InputManager {
 	/// </summary>
 	public static void StageUpdate () {
 		var noteList = getNotes();
-//		if (noteList != null) {
+//		if (noteList != null && noteList.Count != 0) {
 //			var strNoteList = new List<string> (); 
 //			foreach (InNote note in noteList) {
 //				strNoteList.Add (NotesMap.notes[note.Id]);

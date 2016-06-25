@@ -53,6 +53,7 @@ public class BeatMapManager {
 			t.Wait();
 			Notes = new List<NoteInfo>();
 			Dictionary<long, List<TentacleGuitar.Tabular.Note>> result = t.Result.Notes;
+			float offset = Stage.CurrentSongOffset;
 			if (Notes != null) {
 				CurrentNoteNum = 0;
 				foreach (var noteList in result) {
@@ -62,7 +63,7 @@ public class BeatMapManager {
 						Notes.Add(new NoteInfo(
 							Mathf.Clamp(n.Fret - 1, 0, 23),
 							n.String,
-							(float)noteList.Key / 1000f,
+							(float)noteList.Key / 1000f + offset,
 							n.Fret == 0 ? NoteInfo.NoteType.Zero : NoteInfo.NoteType.Tap
 						));
 					}

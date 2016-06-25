@@ -64,6 +64,8 @@ public class SongCard : MonoBehaviour {
 		}
 	}
 
+	public float Offset = 0f;
+
 
 	private int level;
 	private string title;
@@ -81,12 +83,13 @@ public class SongCard : MonoBehaviour {
 	private Color[] levelColor;
 
 
-	public void Init (string i, string t, int l, bool d) {
+	public void Init (string i, string t, int l, bool d, float o) {
 		ID = i;
 		Title = t;
 		Level = l;
 		IsDownloaded = d;
 		Progress = 0f;
+		Offset = o;
 	}
 
 

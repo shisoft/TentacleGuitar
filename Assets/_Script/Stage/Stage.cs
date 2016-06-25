@@ -51,6 +51,7 @@ public class Stage : MonoBehaviour {
 		}
 	}
 	public static string CurrentSongID = "";
+	public static float CurrentSongOffset = 0f;
 
 	// Data Stuff
 	[SerializeField]
@@ -299,11 +300,12 @@ public class Stage : MonoBehaviour {
 			return; 
 		}
 		if (NetworkManager.SongIsDownLoaded(id)) {
+			CurrentSongID = id;
+			CurrentSongOffset = SongCards[id].Offset;
 			StartGame(
 				NetworkManager.GetSongLocalPath(id),
 				NetworkManager.GetBeatMapLocalPath(id)
 			);
-			CurrentSongID = id;
 		} else if (Main) {
 			if (SongCards.ContainsKey(id) && SongCards[id] && !SongCards[id].IsDownloading) {
 				SongCards[id].IsDownloading = true;
@@ -751,7 +753,8 @@ public class Stage : MonoBehaviour {
 						infos[i].Id.ToString(),
 						infos[i].Title,
 						infos[i].Level,
-						NetworkManager.SongIsDownLoaded(infos[i].Id.ToString())
+						NetworkManager.SongIsDownLoaded(infos[i].Id.ToString()),
+						(float)infos[i].Offset / 1000f
 					);
 					SongCards.Add(infos[i].Id.ToString(), sc);
 				}

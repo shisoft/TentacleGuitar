@@ -130,7 +130,7 @@ public class Stage : MonoBehaviour {
 
 		///*
 		if (GamePlaying && StageMicrophone.IsReady) {
-			float[] f = StageMicrophone.GetData(StageMicrophone.SamplePosition() - 44100, 44100);
+				float[] f = StageMicrophone.GetData(StageMicrophone.SamplePosition() - StageMicrophone.sampleRate, StageMicrophone.sampleRate);
 			for (int i = 0; i < f.Length - 1; i++) {
 				Debug.DrawLine(
 					new Vector3((float)(i-1), f[i] * 10000f, 0f),
@@ -138,7 +138,7 @@ public class Stage : MonoBehaviour {
 					Color.red
 				);
 			}
-			StageMicrophone.Main.Source.time = Mathf.Max(((float)StageMicrophone.SamplePosition() / 44100f) - 0.02f, 0f);
+				StageMicrophone.Main.Source.time = Mathf.Max(((float)StageMicrophone.SamplePosition() / StageMicrophone.sampleRate) - 0.02f, 0f);
 		}
 		//*/
 

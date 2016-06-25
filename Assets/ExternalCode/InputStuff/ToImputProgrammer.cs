@@ -62,7 +62,7 @@ public class InputManager {
 	/// </summary>
 	public static void StageUpdate () {
 		int bins = 8192;
-		float[] spectrum = StageMicrophone.GetData (bins);
+		float[] spectrum = StageMicrophone.GetSpectrumData (bins);
 		if (spectrum != null) {
 			double threshold = 0.001;
 			Dictionary<int, InNote> notes = new Dictionary<int, InNote> ();
@@ -111,14 +111,7 @@ public class InputManager {
 		}
 
 
-<<<<<<< HEAD
-		#endregion
-=======
-
-
-
 	#endregion
->>>>>>> 44378d40606a9aab1cc444b730af42230cc79d28
 
 
 		#region -------- Stage API ---------

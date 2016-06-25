@@ -21,7 +21,7 @@ namespace Assets.ExternalCode.WebApi
                     Param += String.Format("{0}={1}&", arg.Key, arg.Value);
                 }
                 Param = Param.TrimEnd('&');
-                byte[] byteArray = Encoding.Default.GetBytes(Param);
+                byte[] byteArray = Encoding.UTF8.GetBytes(Param);
                 HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(new Uri(Url));
                 webReq.Method = "POST";
                 webReq.ContentType = "application/x-www-form-urlencoded";
@@ -33,7 +33,7 @@ namespace Assets.ExternalCode.WebApi
                 HttpWebResponse response = (HttpWebResponse)webReq.GetResponse();
                 response.Cookies = webReq.CookieContainer.GetCookies(new Uri(Url));
 
-                StreamReader sr = new StreamReader(response.GetResponseStream(), Encoding.Default);
+                StreamReader sr = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
                 ret = sr.ReadToEnd();
                 sr.Close();
                 response.Close();
@@ -53,7 +53,7 @@ namespace Assets.ExternalCode.WebApi
                 webReq.Method = "GET";
                 webReq.CookieContainer = cookie;
                 HttpWebResponse response = (HttpWebResponse)webReq.GetResponse();
-                StreamReader sr = new StreamReader(response.GetResponseStream(), Encoding.Default);
+                StreamReader sr = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
                 ret = sr.ReadToEnd();
                 sr.Close();
                 response.Close();
@@ -74,7 +74,7 @@ namespace Assets.ExternalCode.WebApi
                     Param += String.Format("{0}={1}&", arg.Key, arg.Value);
                 }
                 Param = Param.TrimEnd('&');
-                byte[] byteArray = Encoding.Default.GetBytes(Param);
+                byte[] byteArray = Encoding.UTF8.GetBytes(Param);
                 HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(new Uri(Url));
                 webReq.Method = "POST";
                 webReq.ContentType = "application/x-www-form-urlencoded";

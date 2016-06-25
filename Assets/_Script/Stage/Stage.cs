@@ -13,6 +13,7 @@ using AssemblyCSharp;
 public class Stage : MonoBehaviour {
 
 
+
 	#region -------- Param --------
 
 	// Instance
@@ -108,7 +109,6 @@ public class Stage : MonoBehaviour {
 		StageMusic.StopToEndCallback += this.OnMusicEnd;
 		BeatMapManager.StageAwake();
 		InputManager.StageAwake();
-		NetworkManager.StageAwake();
 	}
 
 
@@ -253,13 +253,11 @@ public class Stage : MonoBehaviour {
 	void FixedUpdate () {
 		BeatMapManager.StageFixedUpdate();
 		InputManager.StageFixedUpdate();
-		NetworkManager.StageFixedUpdate();
 	}
 
 
 	void LateUpdate () {
 		BeatMapManager.StageLateUpdate();
-		NetworkManager.StageLateUpdate();
 	}
 
 
@@ -344,13 +342,9 @@ public class Stage : MonoBehaviour {
 		// Start Load
 		if (!Loading && Main) {
 			if (NoSongIsDownLoading) {
-				if (NetworkManager.IsLogedIn) {
-					InitAimTransform();
-					Main.StopAllCoroutines();
-					Main.StartCoroutine(Main.LoadLevel(songPath, beatMapPath));
-				} else {
-					Debug.LogWarning("Can not start a level now! No user is signed in.");
-				}
+				InitAimTransform();
+				Main.StopAllCoroutines();
+				Main.StartCoroutine(Main.LoadLevel(songPath, beatMapPath));
 			} else {
 				Debug.LogWarning("Can not start a level now! Song(s) is loading...");
 			}
@@ -790,7 +784,7 @@ public class Stage : MonoBehaviour {
 		SongCards.Clear();
 		if (success) {
 			List<Assets.ExternalCode.Models.Music> infos = NetworkManager.SongList;
-			for (int i = 0; i < infos.Count; i++) {
+			for (int i = 0; infos != null && i < infos.Count; i++) {
 				Transform tf = SongCardPool.SpawnToDefault("SongCard");
 				tf.localScale = Vector3.one;
 				SongCard sc = tf.GetComponent<SongCard>();

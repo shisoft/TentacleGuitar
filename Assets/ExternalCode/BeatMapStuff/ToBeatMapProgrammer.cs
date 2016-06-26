@@ -62,7 +62,7 @@ public class BeatMapManager {
 						TentacleGuitar.Tabular.Note n = noteList.Value[i];
 						Notes.Add(new NoteInfo(
 							Mathf.Clamp(n.Fret - 1, 0, 23),
-							n.String,
+							n.String - 1,
 							(float)noteList.Key / 1000f + offset,
 							n.Fret == 0 ? NoteInfo.NoteType.Zero : NoteInfo.NoteType.Tap
 						));

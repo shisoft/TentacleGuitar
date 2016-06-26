@@ -130,7 +130,7 @@ public class NetworkManager
 
         FileUtility.ByteToFile(
             b,
-            Application.persistentDataPath + "/" + id + "/Music.mp3"
+            Application.persistentDataPath + "/" + id + "/Music.wav"
         );
 
 
@@ -183,7 +183,7 @@ public class NetworkManager
     /// <returns>  </returns>
     public static bool SongIsDownLoaded(string id)
     {
-		return File.Exists(Path.Combine(Path.Combine(Application.persistentDataPath, id), "Music.mp3")) &&
+		return File.Exists(Path.Combine(Path.Combine(Application.persistentDataPath, id), "Music.wav")) &&
 			File.Exists(Path.Combine(Path.Combine(Application.persistentDataPath, id), "BeatMap.json"));
     }
 
@@ -196,7 +196,7 @@ public class NetworkManager
     /// <returns></returns>
     public static string GetSongLocalPath(string id)
     {
-		return Path.Combine(Path.Combine(Application.persistentDataPath, id), "Music.mp3");
+		return Path.Combine(Path.Combine(Application.persistentDataPath, id), "Music.wav");
     }
 
 

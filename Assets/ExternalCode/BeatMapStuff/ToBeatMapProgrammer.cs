@@ -53,6 +53,7 @@ public class BeatMapManager {
 			t.Wait();
 			Notes = new List<NoteInfo>();
 			Dictionary<long, List<TentacleGuitar.Tabular.Note>> result = t.Result.Notes;
+			float offset = Stage.CurrentSongOffset;
 			if (Notes != null) {
 				CurrentNoteNum = 0;
 				foreach (var noteList in result) {
@@ -62,7 +63,7 @@ public class BeatMapManager {
 						Notes.Add(new NoteInfo(
 							Mathf.Clamp(n.Fret - 1, 0, 23),
 							n.String,
-							(float)noteList.Key / 1000f,
+							(float)noteList.Key / 1000f + offset,
 							n.Fret == 0 ? NoteInfo.NoteType.Zero : NoteInfo.NoteType.Tap
 						));
 					}
@@ -131,9 +132,36 @@ public class BeatMapManager {
 				}
 			}
 
+
+			int minX = 23;
+			int maxX = 0;
+			bool[] stringLighted = new bool[6];
+			for (int i = 0; i < Stage.NotePool.Count; i++) {
+				Note n = Stage.NotePool[i].GetComponent<Note>();
+				if (n) {
+					minX = Mathf.Min(minX, n.X);
+					maxX = Mathf.Max(maxX, n.X);
+					stringLighted[n.Y] = true;
+				}
+			}
+			if (Stage.NotePool.Count > 0) {
+				Stage.MoveCamera((int)(0.5f * (minX + maxX)));
+				for (int i = 0; i < 24; i++) {
+					Stage.SetTrackHightLight(i, i >= minX && i <= maxX);
+					Stage.SetFretWireLight(i, i >= minX && i - 1 <= maxX);
+				}
+				for (int i = 0; i < 6; i++) {
+					Stage.SetStringLight(i, stringLighted[i]);
+				}
+			}
+
+			
+
 		}
 
 	}
+
+
 
 	/// <summary>
 	/// Unity物理层、逻辑层更新时调用一次

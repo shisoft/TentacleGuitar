@@ -21,5 +21,10 @@
         /// 演奏手法
         /// </summary>
         public PlayMode Mode { get; set; }
+
+        /// <summary>
+        /// 音高：如G#2
+        /// </summary>
+        public string Pitch { get; set; }
     }
 }

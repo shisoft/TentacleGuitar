@@ -513,25 +513,28 @@ public class Stage : MonoBehaviour {
 		public static void CheckNote (InNote inote) {
 			int nodeIdx = inote.Id;
 			NoteInfo note = pendingNotes[nodeIdx];
-			var	inoteTime = inote.Time + 2;
-			var noteTime = note.Time;
+			var	inoteTime = inote.Time;// + 2;
+			//var noteTime = note.Time;
 
-			double d = inoteTime - noteTime;
-			double absD = Mathf.Abs ((float)d);
+			Beat (note.X, note.Y, inote.Time);
 
-			if (absD > 2.0 || note.Time < 0) {
-				return;
-			}
-
-			Debug.Log (inoteTime + ", " + noteTime);
-
-			if (absD < 1) {
-				Debug.Log ("Good");
-			} if (d <= -1) {
-				Debug.Log ("Early");
-			} if (d >= 1) {
-				Debug.Log ("Late");
-			}
+//			double d = inoteTime - noteTime;
+//			double absD = Mathf.Abs ((float)d);
+//
+//			if (absD > 2.0 || note.Time < 0) {
+//				return;
+//			}
+//
+//			Debug.Log (inoteTime + ", " + noteTime);
+//
+//			if (absD < 1) {
+//				Stage.Beat(note.X, note.Ym )
+//				Debug.Log ("Good");
+//			} if (d <= -1) {
+//				Debug.Log ("Early");
+//			} if (d >= 1) {
+//				Debug.Log ("Late");
+//			}
 			note.Time = -1f;
 			pendingNotes [nodeIdx] = note;
 			//Debug.Log (nodeIdx + ", " + pendingNotes [nodeIdx].Time);

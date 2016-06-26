@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TentacleGuitarUnity;
+using AssemblyCSharp;
 
 /// <summary>
 /// 
@@ -64,7 +65,8 @@ public class BeatMapManager {
 							Mathf.Clamp(n.Fret - 1, 0, 23),
 							n.String,
 							(float)noteList.Key / 1000f + offset,
-							n.Fret == 0 ? NoteInfo.NoteType.Zero : NoteInfo.NoteType.Tap
+							n.Fret == 0 ? NoteInfo.NoteType.Zero : NoteInfo.NoteType.Tap,
+							NotesMap.notes.IndexOf(n.Pitch)
 						));
 					}
 				}

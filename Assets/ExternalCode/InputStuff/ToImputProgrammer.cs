@@ -14,7 +14,6 @@ using AssemblyCSharp;
 /// </summary>
 public class InputManager {
 
-
 	#region -------- Mono Message ---------
 
 
@@ -53,6 +52,51 @@ public class InputManager {
 		return freqIdx;
 	}
 
+	public static List<InNote> getNotes (){
+		int bins = 8192;
+		float[] spectrum = StageMicrophone.GetSpectrumData (bins);
+		if (spectrum != null) {
+			double threshold = 0.001;
+			Dictionary<int, InNote> notes = new Dictionary<int, InNote> ();
+			double maxAmp = 0, minAmp = 100;
+			for (int i = 0; i < spectrum.Length; i++) {
+				double sAmp = spectrum [i];
+				if (maxAmp < sAmp) {
+					maxAmp = sAmp;
+				}
+				if (minAmp > sAmp && sAmp > 0) {
+					minAmp = sAmp;
+				}
+				if (sAmp > threshold) {
+					var frequency = i * StageMicrophone.sampleRate / bins;
+					if (frequency > 70 && frequency < 1200) {
+						int noteIdx = getNote (frequency);
+						if (notes.ContainsKey (noteIdx)) {
+							notes[noteIdx].Amp += sAmp;
+						} else {
+							notes.Add(noteIdx, new InNote(noteIdx, sAmp));
+						}
+						notes [noteIdx].Time = Stage.Time;
+					}
+					i++;
+				}
+			}
+			List<InNote> noteList = new List<InNote> ();
+			foreach (InNote note in notes.Values) {
+				if (note.Amp >= maxAmp * 0.8) {
+					noteList.Add (note);
+				}
+			}
+			noteList.Sort ((a, b) => a.Amp.CompareTo(b.Amp));
+			int maxNotesInChord = 7;
+			if (noteList.Count > maxNotesInChord) {
+				noteList.RemoveRange (maxNotesInChord, noteList.Count - maxNotesInChord);
+			}
+			return noteList;
+		}
+		return null;
+	}
+
 	/// <summary>
 	/// 画面更新时调用一次，主线程
 	/// 暂停时也会持续调用，谱面尚未加载时也会持续调用，下同
@@ -61,72 +105,52 @@ public class InputManager {
 	/// 请适当 cache 节约性能
 	/// </summary>
 	public static void StageUpdate () {
-		int bins = 8192;
-		float[] spectrum = StageMicrophone.GetSpectrumData (bins);
-		if (spectrum != null) {
-			double threshold = 0.001;
-			Dictionary<int, InNote> notes = new Dictionary<int, InNote> ();
-			for (int i = 0; i < spectrum.Length; i++) {
-				double sAmp = spectrum [i];
-				if (sAmp > threshold) {
-					var frequency = i * StageMicrophone.sampleRate / bins;
-					if (frequency > 70 && frequency < 1200) {
-						int noteIdx = getNote (frequency);
-						if (notes.ContainsKey (noteIdx)) {
-							notes[noteIdx].Amp += sAmp;
-						} else {
-							notes.Add (noteIdx, new InNote(noteIdx, sAmp));
-						}
-					}
-					i++;
-				}
-			}
-			List<InNote> noteList = new List<InNote> ();
-			foreach (InNote note in notes.Values) {
-				noteList.Add (note);
-			}
-			noteList.Sort ((a, b) => a.Amp.CompareTo(b.Amp));
-			int maxNotesInChord = 6;
-			if (noteList.Count > maxNotesInChord) {
-				noteList.RemoveRange (maxNotesInChord, noteList.Count - maxNotesInChord);
-			}
-			var strNoteList = new List<string> (); 
-			foreach (InNote note in noteList) {
-				strNoteList.Add (NotesMap.notes[note.Id]);
-			}
-			//Debug.Log (string.Join(" ", strNoteList.ToArray()));
+		var noteList = getNotes();
+//		if (noteList != null && noteList.Count != 0) {
+//			var strNoteList = new List<string> (); 
+//			foreach (InNote note in noteList) {
+//				strNoteList.Add (NotesMap.notes[note.Id]);
+//			}
+//			Debug.Log (string.Join(" ", strNoteList.ToArray()));
+//		}
+		if (noteList == null) {
+			return;
+		}
+		foreach (InNote note in noteList) {
+			//Debug.Log (note.Time);
+			Stage.CheckNote (note);
 		}
 	}
 
 
-		/// <summary>
-		/// Unity物理层、逻辑层更新时调用一次
-		/// 多次调用的时间间隔相等，大约为0.02s，具体时间用 UnityEngine.Time.deltaTime 可以获取 
-		/// 主线程假死会使时间间隔变大，此时 deltaTime 有一定几率依旧显示正常
-		/// </summary>
-		public static void StageFixedUpdate () {
+	/// <summary>
+	/// Unity物理层、逻辑层更新时调用一次
+	/// 多次调用的时间间隔相等，大约为0.02s，具体时间用 UnityEngine.Time.deltaTime 可以获取 
+	/// 主线程假死会使时间间隔变大，此时 deltaTime 有一定几率依旧显示正常
+	/// </summary>
+	public static void StageFixedUpdate () {
 
-			// ----- Your Code Here -----
+		// ----- Your Code Here -----
 
-		}
+	}
 
 
 	#endregion
 
 
-		#region -------- Stage API ---------
+	#region -------- Stage API ---------
 
 
-		// 用 Stage.Beat(int, int, float) 单次击打一下某个位置，
+	// 用 Stage.Beat(int, int, float) 单次击打一下某个位置，
 
-		// 用 StageInput.Hold(int, int) 按住某个位置一帧，确保在 StageUpdate 函数里调用
+	// 用 StageInput.Hold(int, int) 按住某个位置一帧，确保在 StageUpdate 函数里调用
 
-		// 用 StageMicrophone.SamplePosition() 获取当前麦克风正在录制的位置，单位Sample（秒x44100)
+	// 用 StageMicrophone.SamplePosition() 获取当前麦克风正在录制的位置，单位Sample（秒x44100)
 
-		// 用 StageMicrophone.GetData() 获取一段已经录制的音频，这个音频是声音最原始的震动，采样率44100次每秒。
-
-
-		#endregion
+	// 用 StageMicrophone.GetData() 获取一段已经录制的音频，这个音频是声音最原始的震动，采样率44100次每秒。
 
 
-	}
+	#endregion
+
+
+}

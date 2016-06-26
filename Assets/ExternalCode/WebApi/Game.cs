@@ -79,12 +79,9 @@ namespace Assets.ExternalCode.WebApi
         /// </summary>
         /// <param name="tabularStr"></param>
         /// <returns></returns>
-        public static Task<Tabular> ParseTabularAsync(string tabularStr)
+		public static Tabular ParseTabularAsync(string tabularStr)
         {
-            return Task.Factory.StartNew(()=>
-            {
-                return JsonConvert.DeserializeObject<Tabular>(tabularStr);
-            });
+			return JsonConvert.DeserializeObject<Tabular>(tabularStr);
         }
     }
 }

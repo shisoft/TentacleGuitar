@@ -51,9 +51,8 @@ public class BeatMapManager {
 
 		if (!string.IsNullOrEmpty(data)) {
 			var t = Assets.ExternalCode.WebApi.Game.ParseTabularAsync(data);
-			t.Wait();
 			Notes = new List<NoteInfo>();
-			Dictionary<long, List<TentacleGuitar.Tabular.Note>> result = t.Result.Notes;
+			Dictionary<long, List<TentacleGuitar.Tabular.Note>> result = t.Notes;
 			float offset = Stage.CurrentSongOffset;
 			if (Notes != null) {
 				CurrentNoteNum = 0;
